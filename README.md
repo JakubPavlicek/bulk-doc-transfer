@@ -1,5 +1,10 @@
 # Bulk Transfer and Processing of Documents in a WildFly Server Environment
 
+The task is to implement a client application that will send electronic documents in XML format, and a server application for receiving and storing these documents.
+The server-side processing will be implemented in three ways: direct storage of the received message during request processing, processing the message via the application server’s internal JMS queue, and processing via an external RabbitMQ queue, with the aim of comparing these solutions in terms of performance and the number of documents that can be received simultaneously.
+
+> Technologies: Java, WildFly, RabbitMQ, Docker, PostgreSQL
+
 ### 📄 Submission Structure
 Each electronic document submission must include the following:
 
