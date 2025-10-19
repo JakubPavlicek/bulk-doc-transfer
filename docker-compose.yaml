@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:18.0-alpine3.22
+    environment:
+      - POSTGRES_DB=doc_submission_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+
+  rabbitmq:
+    image: rabbitmq:4.1.4-alpine
+    environment:
+      - RABBITMQ_DEFAULT_USER=myuser
+      - RABBITMQ_DEFAULT_PASS=secret
+    ports:
+      - '5672:5672'
