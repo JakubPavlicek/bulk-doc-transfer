@@ -77,7 +77,7 @@ paths:
         - submissions
       summary: Get submission
       description: Get submission by ID.
-      operationId: getSubmissionById
+      operationId: getSubmission
       parameters:
         - $ref: '#/components/parameters/SubmissionId'
       responses:

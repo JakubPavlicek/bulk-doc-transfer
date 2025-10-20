@@ -4,6 +4,9 @@ import com.synchronous.api.SubmissionsApi;
 import com.synchronous.api.dto.Submission;
 import com.synchronous.api.dto.SubmissionDetail;
 import com.synchronous.api.dto.SubmissionState;
+import com.synchronous.app.mapper.SubmissionApiMapper;
+import com.synchronous.app.model.SubmissionView;
+import com.synchronous.app.service.SubmissionService;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +26,14 @@ import java.util.List;
 @RestController
 public class SubmissionController implements SubmissionsApi {
 
+    private final SubmissionService submissionService;
+    private final SubmissionApiMapper submissionApiMapper;
+
     @Override
-    public ResponseEntity<@NonNull Submission> getSubmissionById(Long submissionId) {
-        return SubmissionsApi.super.getSubmissionById(submissionId);
+    public ResponseEntity<@NonNull Submission> getSubmission(Long submissionId) {
+        SubmissionView submissionView = submissionService.getSubmission(submissionId);
+        Submission submission = submissionApiMapper.mapToSubmission(submissionView);
+        return ResponseEntity.ok(submission);
     }
 
     @Override

@@ -2,6 +2,8 @@ package com.synchronous.app.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -94,13 +96,15 @@ public class DocumentSubmission {
         name = "state",
         columnDefinition = "submission_state not null"
     )
-    private Object state;
+    @Enumerated(EnumType.STRING)
+    private SubmissionState state;
 
     @Column(
         name = "check_result",
         columnDefinition = "submission_check_result"
     )
-    private Object checkResult;
+    @Enumerated(EnumType.STRING)
+    private SubmissionCheckResult checkResult;
 
     @NotNull
     @Column(
