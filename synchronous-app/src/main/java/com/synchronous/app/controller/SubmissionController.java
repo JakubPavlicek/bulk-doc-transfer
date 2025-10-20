@@ -1,14 +1,14 @@
 package com.synchronous.app.controller;
 
+import com.synchronous.api.SubmissionsApi;
+import com.synchronous.api.dto.Submission;
+import com.synchronous.api.dto.SubmissionDetail;
+import com.synchronous.api.dto.SubmissionState;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.openapitools.api.SubmissionsApi;
-import org.openapitools.model.Submission;
-import org.openapitools.model.SubmissionDetail;
-import org.openapitools.model.SubmissionState;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -189,6 +189,8 @@
                             <skipIfSpecIsUnchanged>true</skipIfSpecIsUnchanged>
                             <configOptions>
                                 <sourceFolder>src/gen/java</sourceFolder>
+                                <apiPackage>com.synchronous.api</apiPackage>
+                                <modelPackage>com.synchronous.api.dto</modelPackage>
                                 <useSpringBoot3>true</useSpringBoot3>
                                 <interfaceOnly>true</interfaceOnly>
                                 <generateBuilders>true</generateBuilders>
