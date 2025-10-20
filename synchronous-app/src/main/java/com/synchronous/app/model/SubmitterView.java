@@ -1,8 +1,8 @@
 package com.synchronous.app.model;
 
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 public class SubmitterView {
 
     private Long id;

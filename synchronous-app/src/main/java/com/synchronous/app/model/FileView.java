@@ -1,10 +1,10 @@
 package com.synchronous.app.model;
 
-import lombok.Getter;
+import lombok.Data;
 
 import java.time.Instant;
 
-@Getter
+@Data
 public class FileView {
 
     private Long id;

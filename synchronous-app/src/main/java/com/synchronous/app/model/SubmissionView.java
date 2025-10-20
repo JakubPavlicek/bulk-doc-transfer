@@ -1,12 +1,11 @@
 package com.synchronous.app.model;
 
-import lombok.Getter;
+import lombok.Data;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.List;
 
-@Getter
+@Data
 public class SubmissionView {
 
     private Long id;

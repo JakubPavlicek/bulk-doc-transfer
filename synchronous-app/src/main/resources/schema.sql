@@ -1,17 +1,3 @@
--- Types
-CREATE TYPE "submission_state" AS ENUM (
-  'ACCEPTED',
-  'PROCESSED',
-  'SAVED',
-  'RESPONSE_SENT'
-);
-
-CREATE TYPE "submission_check_result" AS ENUM (
-  'OK',
-  'ELECTRONIC_SIGNATURE',
-  'MALWARE'
-);
-
 -- Sequences for automatic ID generation
 CREATE SEQUENCE IF NOT EXISTS submitters_id_seq;
 CREATE SEQUENCE IF NOT EXISTS files_id_seq;
@@ -31,7 +17,7 @@ CREATE TABLE IF NOT EXISTS "files" (
   "type" varchar(150) NOT NULL,
   "size" bigint NOT NULL,
   "content" bytea,
-  "created_at" timestamp NOT NULL
+  "created_at" timestamp
 );
 
 CREATE TABLE IF NOT EXISTS "document_submissions" (
@@ -40,17 +26,17 @@ CREATE TABLE IF NOT EXISTS "document_submissions" (
   "subject" varchar(2000) NOT NULL,
   "description" text,
   "reference_number" varchar(255) UNIQUE NOT NULL,
-  "created_at" timestamp NOT NULL,
-  "state" submission_state NOT NULL,
-  "check_result" submission_check_result,
-  "total_files" int NOT NULL
+  "created_at" timestamp,
+  "state" varchar(13) check (state in ('ACCEPTED', 'PROCESSED', 'SAVED', 'RESPONSE_SENT')) NOT NULL,
+  "check_result" varchar(20) check (check_result in ('OK', 'ELECTRONIC_SIGNATURE', 'MALWARE')),
+  "total_files" int
 );
 
 CREATE TABLE IF NOT EXISTS "submission_state_history" (
   "id" bigint PRIMARY KEY DEFAULT nextval('submission_state_history_id_seq'),
   "submission_id" bigint NOT NULL,
-  "current_state" submission_state NOT NULL,
-  "changed_at" timestamp NOT NULL
+  "current_state" varchar(13) check (current_state in ('ACCEPTED', 'PROCESSED', 'SAVED', 'RESPONSE_SENT')) NOT NULL,
+  "changed_at" timestamp
 );
 
 -- Add named foreign key constraints

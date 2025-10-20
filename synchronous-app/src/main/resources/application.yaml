@@ -27,9 +27,11 @@ spring:
         jdbc:
           fetch_size: 50
           batch_size: 10
+        generate_statistics: true
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     open-in-view: false
+    show-sql: true
   datasource:
     url: jdbc:postgresql://localhost:5432/doc_submission_db
     username: postgres

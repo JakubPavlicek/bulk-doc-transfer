@@ -13,7 +13,7 @@
     <artifactId>synchronous-app</artifactId>
     <version>1.0.0</version>
     <name>synchronous-app</name>
-    <description>synchronous-app</description>
+    <description>Synchronous application for submission processing</description>
 
     <properties>
         <!-- Java and Maven -->

@@ -33,6 +33,8 @@ public class SubmissionController implements SubmissionsApi {
 
     @Override
     public ResponseEntity<@NonNull Submission> getSubmission(Long submissionId) {
+        log.info("Submission requested for ID: {}", submissionId);
+
         SubmissionView submissionView = submissionService.getSubmission(submissionId);
         Submission submission = submissionApiMapper.mapToSubmission(submissionView);
 
@@ -45,6 +47,8 @@ public class SubmissionController implements SubmissionsApi {
         @Nullable DocumentSubmissionState state,
         Pageable pageable
     ) {
+        log.info("Submission list requested for submitter email: {}, state: {}", submitterEmail, state);
+
         SubmissionState submissionState = state != null ? SubmissionState.valueOf(state.name()) : null;
 
         Page<@NonNull SubmissionDetailView> submissionDetailViewPage =
@@ -61,6 +65,8 @@ public class SubmissionController implements SubmissionsApi {
         List<MultipartFile> files,
         String description
     ) {
+        log.info("Submission upload requested for email: {}, number of files: {}", email, files.size());
+
         submissionService.uploadSubmission(email, subject, description, files);
 
         return ResponseEntity.accepted().build();

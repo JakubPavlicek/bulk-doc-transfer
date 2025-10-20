@@ -1,28 +1,32 @@
 {
-  "name": "client",
-  "version": "0.1.0",
+  "name": "next-client",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "pack": "pack build $(npm pkg get name | tr -d '\"'):$(npm pkg get version | tr -d '\"') --builder heroku/builder:22 --buildpack heroku/nodejs --env NODE_ENV=production"
+    "pack": "pack build $(npm pkg get name | tr -d '\"'):$(npm pkg get version | tr -d '\"') --builder heroku/builder:24 --env NODE_ENV=production"
+  },
+  "engines": {
+    "node": "^24.10.0",
+    "npm": "^11.6.2"
   },
   "dependencies": {
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "next": "15.5.6"
+    "next": "15.5.6",
+    "typescript": "^5",
+    "tailwindcss": "^4",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^24",
+    "@types/react": "^19"
   },
   "devDependencies": {
-    "typescript": "^5",
-    "@types/node": "^20",
-    "@types/react": "^19",
+    "@eslint/eslintrc": "^3",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "15.5.6",
-    "@eslint/eslintrc": "^3"
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
   }
 }

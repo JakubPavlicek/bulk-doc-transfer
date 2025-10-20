@@ -2,6 +2,8 @@ package com.synchronous.app.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,6 +18,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 
@@ -57,15 +60,16 @@ public class SubmissionStateHistory {
 
     @Column(
         name = "current_state",
-        columnDefinition = "submission_state not null"
+        length = 13
     )
-    private Object currentState;
+    @Enumerated(EnumType.STRING)
+    private SubmissionState currentState;
 
-    @NotNull
     @Column(
         name = "changed_at",
-        nullable = false
+        updatable = false
     )
+    @CreationTimestamp
     private Instant changedAt;
 
 }

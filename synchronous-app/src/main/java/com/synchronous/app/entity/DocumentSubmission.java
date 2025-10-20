@@ -21,6 +21,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 import java.util.LinkedHashSet;
@@ -91,38 +93,34 @@ public class DocumentSubmission {
     )
     private String referenceNumber;
 
-    @NotNull
     @Column(
         name = "created_at",
-        nullable = false
+        updatable = false
     )
+    @CreationTimestamp
     private Instant createdAt;
 
     @Column(
         name = "state",
-        columnDefinition = "submission_state not null"
+        length = 13
     )
     @Enumerated(EnumType.STRING)
     private SubmissionState state;
 
     @Column(
         name = "check_result",
-        columnDefinition = "submission_check_result"
+        length = 20
     )
     @Enumerated(EnumType.STRING)
     private SubmissionCheckResult checkResult;
 
-    @NotNull
-    @Column(
-        name = "total_files",
-        nullable = false
-    )
+    @Column(name = "total_files")
     private Integer totalFiles;
 
     @OneToMany(mappedBy = "submission")
-    private Set<File> files = new LinkedHashSet<>();
+    private final Set<SubmissionFile> submissionFiles = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "submission")
-    private Set<SubmissionStateHistory> submissionStateHistories = new LinkedHashSet<>();
+    private final Set<SubmissionStateHistory> submissionStateHistories = new LinkedHashSet<>();
 
 }

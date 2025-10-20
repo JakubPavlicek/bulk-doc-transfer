@@ -64,3 +64,12 @@ Additionally, the server must store:
     At what volume does the system start to fail or degrade?
 
 This will help compare the performance and scalability of the three processing approaches.
+
+## Implementation
+
+The backend applications are implemented in Spring Boot 4.0.0 and Java 25.  
+The frontend is implemented in Next.js 15.5.6, React 19.2.0 and TypeScript 5.9.3.
+
+### Database
+
+<img src="database.png" alt="Database Schema" width="2000">

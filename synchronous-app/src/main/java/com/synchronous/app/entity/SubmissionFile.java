@@ -17,6 +17,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 
@@ -27,7 +28,7 @@ import java.time.Instant;
 @Setter
 @Entity
 @Table(name = "files")
-public class File {
+public class SubmissionFile {
 
     @Id
     @GeneratedValue(
@@ -83,11 +84,11 @@ public class File {
     @Column(name = "content")
     private byte[] content;
 
-    @NotNull
     @Column(
         name = "created_at",
-        nullable = false
+        updatable = false
     )
+    @CreationTimestamp
     private Instant createdAt;
 
 }

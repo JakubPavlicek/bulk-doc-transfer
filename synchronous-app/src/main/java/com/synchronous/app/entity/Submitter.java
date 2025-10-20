@@ -55,11 +55,12 @@ public class Submitter {
     @NotNull
     @Column(
         name = "email",
-        nullable = false
+        nullable = false,
+        unique = true
     )
     private String email;
 
     @OneToMany(mappedBy = "submitter")
-    private Set<DocumentSubmission> documentSubmissions = new LinkedHashSet<>();
+    private final Set<DocumentSubmission> documentSubmissions = new LinkedHashSet<>();
 
 }
