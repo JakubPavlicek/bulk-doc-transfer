@@ -36,9 +36,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SubmissionDetail'
+                $ref: '#/components/schemas/SubmissionPage'
         '400':
           $ref: '#/components/responses/400BadRequest'
         '404':
@@ -114,7 +112,12 @@ components:
       description: Parameter for the submitter email.
       required: false
       schema:
-        $ref: '#/components/schemas/Submitter/properties/email'
+        type: string
+        format: email
+        description: Submitter email.
+        example: jpvlck@students.zcu.cz
+        maxLength: 255
+        minLength: 1
 
     SubmissionState:
       name: state
@@ -122,7 +125,7 @@ components:
       description: Parameter for the submission state.
       required: false
       schema:
-        $ref: '#/components/schemas/SubmissionState'
+        $ref: '#/components/schemas/DocumentSubmissionState'
 
     Page:
       name: page
@@ -185,10 +188,10 @@ components:
           maxLength: 255
           minLength: 1
 
-    SubmissionState:
+    DocumentSubmissionState:
       type: string
-      title: Submission State
-      description: State of the submission.
+      title: Document Submission State
+      description: State of the document submission.
       example: "ACCEPTED"
       enum:
         - ACCEPTED
@@ -244,7 +247,7 @@ components:
           description: Date and time of the submission creation.
           example: "2025-01-01T00:00:00Z"
         state:
-          $ref: '#/components/schemas/SubmissionState'
+          $ref: '#/components/schemas/DocumentSubmissionState'
         checkResult:
           type: string
           description: Result of the check.
@@ -317,7 +320,7 @@ components:
       nullable: false
       required:
         - id
-        - submitterId
+        - submitter
         - referenceNumber
         - createdAt
         - state
@@ -325,14 +328,14 @@ components:
       properties:
         id:
           $ref: '#/components/schemas/SubmissionId'
-        submitterId:
-          $ref: '#/components/schemas/Submission/properties/id'
+        submitter:
+          $ref: '#/components/schemas/Submitter'
         referenceNumber:
           $ref: '#/components/schemas/Submission/properties/referenceNumber'
         createdAt:
           $ref: '#/components/schemas/Submission/properties/createdAt'
         state:
-          $ref: '#/components/schemas/SubmissionState'
+          $ref: '#/components/schemas/DocumentSubmissionState'
         checkResult:
           $ref: '#/components/schemas/Submission/properties/checkResult'
 
@@ -370,6 +373,154 @@ components:
         description: "This is a detailed description of the submission."
         files:
           - file1.pdf
+
+    # -------------------------------------------------------------
+    # Page section
+    # -------------------------------------------------------------
+
+    SubmissionPage:
+      type: object
+      description: "Represents a page of submissions, including pagination information."
+      additionalProperties: false
+      required:
+        - content
+        - pageable
+        - last
+        - totalElements
+        - totalPages
+        - first
+        - size
+        - number
+        - sort
+        - numberOfElements
+        - empty
+      properties:
+        content:
+          type: array
+          description: List of submissions.
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/SubmissionDetail'
+          example:
+            - id: 1
+              submitter:
+                id: 1
+                email: jpvlck@students.zcu.cz
+              referenceNumber: "C120251"
+              createdAt: "2025-01-01T00:00:00Z"
+              state: "ACCEPTED"
+              checkResult: "OK"
+        pageable:
+          $ref: '#/components/schemas/PageableDTO'
+        last:
+          type: boolean
+          description: |
+            A boolean value indicating whether this is the last page of data.
+            If `true`, it is the last page; otherwise, it's not the last page.
+          example: false
+        totalElements:
+          type: integer
+          format: int64
+          description: "The total number of items."
+          example: 4
+        totalPages:
+          type: integer
+          description: "The total number of pages needed to display all the data based on the page size."
+          example: 2
+        first:
+          type: boolean
+          description: |
+            A boolean value indicating whether this is the first page of data.
+            If `true`, it is the first page; otherwise, it's not the first page.
+          example: true
+        size:
+          type: integer
+          description: "The maximum number of items contained on each page."
+          example: 2
+        number:
+          type: integer
+          description: "The page number for the current page."
+          example: 0
+        sort:
+          $ref: '#/components/schemas/SortDTO'
+        numberOfElements:
+          type: integer
+          description: "The number of items on the current page."
+          example: 2
+        empty:
+          type: boolean
+          description: |
+            A boolean value indicating whether the current page is empty.
+            If `true`, the page has no items; otherwise, it has content.
+          example: false
+
+    SortDTO:
+      type: object
+      description: "Represents sorting information for ordering query results based on one or more criteria."
+      additionalProperties: false
+      required:
+        - empty
+        - sorted
+        - unsorted
+      properties:
+        empty:
+          type: boolean
+          example: false
+          description: |
+            A boolean value indicating whether the sorting information is empty. 
+            If `true`, there are no sorting criteria defined for the query.
+        sorted:
+          type: boolean
+          example: true
+          description: |
+            A boolean value indicating whether the query results are sorted. 
+            If `true`, the query includes sorting criteria.
+        unsorted:
+          type: boolean
+          example: false
+          description: |
+            A boolean value indicating whether the query results are unsorted. 
+            If `true`, the query results are not sorted according to any criteria.
+
+    PageableDTO:
+      type: object
+      description: "Represents pagination and sorting information for querying a paginated dataset."
+      additionalProperties: false
+      required:
+        - pageNumber
+        - pageSize
+        - sort
+        - offset
+        - paged
+        - unpaged
+      properties:
+        pageNumber:
+          type: integer
+          description: "The page number to retrieve."
+          example: 0
+        pageSize:
+          type: integer
+          description: "The maximum number of elements to be returned on each page."
+          example: 2
+        sort:
+          $ref: '#/components/schemas/SortDTO'
+        offset:
+          type: integer
+          format: int64
+          description: "The offset of the current page within the result set."
+          example: 0
+        paged:
+          type: boolean
+          description: |
+            A boolean value indicating whether the query results are paginated. 
+            If `true`, the query includes pagination criteria.
+          example: true
+        unpaged:
+          type: boolean
+          description: |
+            A boolean value indicating whether the query results are not paginated. 
+            If `true`, the query results are not subject to pagination.
+          example: false
 
     ProblemDetail:
       type: object

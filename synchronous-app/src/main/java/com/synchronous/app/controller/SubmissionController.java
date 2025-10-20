@@ -1,17 +1,19 @@
 package com.synchronous.app.controller;
 
 import com.synchronous.api.SubmissionsApi;
+import com.synchronous.api.dto.DocumentSubmissionState;
 import com.synchronous.api.dto.Submission;
-import com.synchronous.api.dto.SubmissionDetail;
-import com.synchronous.api.dto.SubmissionState;
+import com.synchronous.api.dto.SubmissionPage;
+import com.synchronous.app.entity.SubmissionState;
 import com.synchronous.app.mapper.SubmissionApiMapper;
+import com.synchronous.app.model.SubmissionDetailView;
 import com.synchronous.app.model.SubmissionView;
 import com.synchronous.app.service.SubmissionService;
-import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,16 +35,23 @@ public class SubmissionController implements SubmissionsApi {
     public ResponseEntity<@NonNull Submission> getSubmission(Long submissionId) {
         SubmissionView submissionView = submissionService.getSubmission(submissionId);
         Submission submission = submissionApiMapper.mapToSubmission(submissionView);
+
         return ResponseEntity.ok(submission);
     }
 
     @Override
-    public ResponseEntity<@NonNull List<SubmissionDetail>> listSubmissions(
-        @Nullable Email submitterEmail,
-        @Nullable SubmissionState state,
+    public ResponseEntity<@NonNull SubmissionPage> listSubmissions(
+        @Nullable String submitterEmail,
+        @Nullable DocumentSubmissionState state,
         Pageable pageable
     ) {
-        return SubmissionsApi.super.listSubmissions(submitterEmail, state, pageable);
+        SubmissionState submissionState = state != null ? SubmissionState.valueOf(state.name()) : null;
+
+        Page<@NonNull SubmissionDetailView> submissionDetailViewPage =
+            submissionService.listSubmissions(submitterEmail, submissionState, pageable);
+        SubmissionPage submissionPage = submissionApiMapper.mapToSubmissionPage(submissionDetailViewPage);
+
+        return ResponseEntity.ok(submissionPage);
     }
 
     @Override
@@ -52,7 +61,9 @@ public class SubmissionController implements SubmissionsApi {
         List<MultipartFile> files,
         String description
     ) {
-        return SubmissionsApi.super.uploadSubmission(email, subject, files, description);
+        submissionService.uploadSubmission(email, subject, description, files);
+
+        return ResponseEntity.accepted().build();
     }
 
 }
