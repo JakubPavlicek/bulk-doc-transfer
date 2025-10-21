@@ -1,14 +1,15 @@
 package com.synchronous.app.controller;
 
+import com.shared.core.entity.SubmissionState;
+import com.shared.core.model.SubmissionDetailView;
+import com.shared.core.model.SubmissionView;
+import com.shared.core.service.DocumentSubmissionService;
+import com.shared.core.service.SubmissionService;
 import com.synchronous.api.SubmissionsApi;
 import com.synchronous.api.dto.DocumentSubmissionState;
 import com.synchronous.api.dto.Submission;
 import com.synchronous.api.dto.SubmissionPage;
-import com.synchronous.app.entity.SubmissionState;
 import com.synchronous.app.mapper.SubmissionApiMapper;
-import com.synchronous.app.model.SubmissionDetailView;
-import com.synchronous.app.model.SubmissionView;
-import com.synchronous.app.service.SubmissionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -28,6 +29,7 @@ import java.util.List;
 @RestController
 public class SubmissionController implements SubmissionsApi {
 
+    private final DocumentSubmissionService documentSubmissionService;
     private final SubmissionService submissionService;
     private final SubmissionApiMapper submissionApiMapper;
 
@@ -35,7 +37,7 @@ public class SubmissionController implements SubmissionsApi {
     public ResponseEntity<@NonNull Submission> getSubmission(Long submissionId) {
         log.info("Submission requested for ID: {}", submissionId);
 
-        SubmissionView submissionView = submissionService.getSubmission(submissionId);
+        SubmissionView submissionView = documentSubmissionService.getSubmission(submissionId);
         Submission submission = submissionApiMapper.mapToSubmission(submissionView);
 
         return ResponseEntity.ok(submission);
@@ -52,7 +54,7 @@ public class SubmissionController implements SubmissionsApi {
         SubmissionState submissionState = state != null ? SubmissionState.valueOf(state.name()) : null;
 
         Page<@NonNull SubmissionDetailView> submissionDetailViewPage =
-            submissionService.listSubmissions(submitterEmail, submissionState, pageable);
+            documentSubmissionService.listSubmissions(submitterEmail, submissionState, pageable);
         SubmissionPage submissionPage = submissionApiMapper.mapToSubmissionPage(submissionDetailViewPage);
 
         return ResponseEntity.ok(submissionPage);

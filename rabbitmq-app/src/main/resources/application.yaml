@@ -55,6 +55,14 @@ spring:
     virtual:
       enabled: true
 
+rabbitmq:
+  queue:
+    name: submission_queue
+  exchange:
+    name: submission_exchange
+  routing:
+    key: submission_routing_key
+
 springdoc:
   api-docs:
     enabled: false

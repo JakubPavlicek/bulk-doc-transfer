@@ -1,0 +1,31 @@
+services:
+  jms-app:
+    container_name: jms-app
+    image: jms-app:1.0.0
+    pull_policy: never
+    environment:
+      THC_PATH: /actuator/health
+      THC_PORT: 8020
+      TZ: Europe/Prague
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/doc_submission_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "/workspace/health-check" ]
+      start_period: 8s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "8030:8030"
+    networks:
+      - backend
+      - frontend
+
+  next-client:
+    extends:
+      file: docker-compose.yaml
+      service: next-client
+    depends_on:
+      jms-app:
+        condition: service_healthy

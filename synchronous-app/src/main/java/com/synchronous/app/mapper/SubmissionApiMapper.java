@@ -2,9 +2,9 @@ package com.synchronous.app.mapper;
 
 import com.synchronous.api.dto.Submission;
 import com.synchronous.api.dto.SubmissionPage;
-import com.synchronous.app.model.SubmissionDetailView;
-import com.synchronous.app.model.SubmissionView;
-import com.synchronous.app.model.SubmitterView;
+import com.shared.core.model.SubmissionDetailView;
+import com.shared.core.model.SubmissionView;
+import com.shared.core.model.SubmitterView;
 import org.jspecify.annotations.NonNull;
 import org.mapstruct.Mapper;
 import org.springframework.data.domain.Page;
