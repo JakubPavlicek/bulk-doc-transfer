@@ -27,7 +27,7 @@
         <maven-antrun.version>3.2.0</maven-antrun.version>
 
         <!-- Hibernate ORM Processor for JPA Metamodel generation -->
-        <hibernate-processor.version>7.1.3.Final</hibernate-processor.version>
+        <hibernate-processor.version>7.1.4.Final</hibernate-processor.version>
 
         <!-- Tools -->
         <springdoc.version>3.0.0-M1</springdoc.version>

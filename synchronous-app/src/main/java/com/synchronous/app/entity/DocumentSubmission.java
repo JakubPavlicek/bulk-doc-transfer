@@ -118,7 +118,7 @@ public class DocumentSubmission {
     private Integer totalFiles;
 
     @OneToMany(mappedBy = "submission")
-    @OrderBy(SubmissionFile_.ID)
+    @OrderBy("id")
     private final Set<SubmissionFile> files = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "submission")
