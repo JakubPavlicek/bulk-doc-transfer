@@ -2,9 +2,6 @@ services:
   postgres:
     container_name: postgres
     image: postgres:18.0-alpine3.22
-    profiles:
-      - sync
-      - async
     environment:
       - POSTGRES_DB=doc_submission_db
       - POSTGRES_USER=postgres
@@ -21,53 +18,10 @@ services:
     networks:
       - backend
 
-  rabbitmq:
-    container_name: rabbitmq
-    image: rabbitmq:4.1.4-alpine
-    profiles:
-      - async
-    environment:
-      - RABBITMQ_DEFAULT_USER=myuser
-      - RABBITMQ_DEFAULT_PASS=secret
-    ports:
-      - '5672:5672'
-    networks:
-      - backend
-
-  synchronous-app:
-    container_name: synchronous-app
-    image: synchronous-app:1.0.0
-    pull_policy: never
-    profiles:
-      - sync
-    environment:
-      THC_PATH: /actuator/health
-      THC_PORT: 8010
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/doc_submission_db
-    depends_on:
-      postgres:
-        condition: service_healthy
-    healthcheck:
-      test: [ "CMD", "/workspace/health-check" ]
-      start_period: 8s
-      timeout: 5s
-      retries: 5
-    ports:
-      - "8010:8010"
-    networks:
-      - backend
-      - frontend
-
   next-client:
     container_name: next-client
     image: next-client:1.0.0
     pull_policy: never
-    profiles:
-      - sync
-      - async
-    depends_on:
-      synchronous-app:
-        condition: service_healthy
     networks:
       - frontend
     ports:

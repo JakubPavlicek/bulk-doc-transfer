@@ -1,0 +1,62 @@
+server:
+  port: 8020
+  compression:
+    enabled: true
+
+spring:
+  application:
+    name: synchronous-app
+  jackson:
+    mapper:
+      sort-properties-alphabetically: false
+  sql:
+    init:
+      mode: always  # Always execute the schema.sql
+      continue-on-error: true  # Skip execution of schema.sql if the db already exists
+  jpa:
+    properties:
+      hibernate:
+        order_inserts: true
+        order_updates: true
+        connection:
+          provider_disables_autocommit: true
+        query:
+          in_clause_parameter_padding: true
+          fail_on_pagination_over_collection_fetch: true
+          plan_cache_max_size: 4096
+        jdbc:
+          fetch_size: 50
+          batch_size: 10
+        generate_statistics: true
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    show-sql: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/doc_submission_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      auto-commit: false
+      minimum-idle: 5
+      maximum-pool-size: 30
+      idle-timeout: 600000
+      connection-timeout: 30000
+      max-lifetime: 1800000
+  rabbitmq:
+    host: localhost
+    username: rabbit
+    password: rabbit
+  mvc:
+    problemdetails:
+      enabled: true
+  threads:
+    virtual:
+      enabled: true
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    url: /openapi.yaml
