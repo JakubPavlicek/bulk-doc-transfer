@@ -1,0 +1,152 @@
+{
+	"info": {
+		"_postman_id": "ca2c7c08-16c2-4542-8940-7b23eff46c28",
+		"name": "Bulk Doc Transfer",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26807991"
+	},
+	"item": [
+		{
+			"name": "List submissions",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{apiUrl}}/submissions?submitterEmail=jpvlck@students.zcu.cz&page=0&size=10",
+					"host": [
+						"{{apiUrl}}"
+					],
+					"path": [
+						"submissions"
+					],
+					"query": [
+						{
+							"key": "submitterEmail",
+							"value": "jpvlck@students.zcu.cz"
+						},
+						{
+							"key": "state",
+							"value": "RESPONSE_SENT",
+							"disabled": true
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create submission",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "email",
+							"value": "jpvlck@students.zcu.cz",
+							"type": "text"
+						},
+						{
+							"key": "subject",
+							"value": "Subject",
+							"type": "text"
+						},
+						{
+							"key": "description",
+							"value": "Description",
+							"type": "text"
+						},
+						{
+							"key": "files",
+							"type": "file",
+							"src": [
+								"/Users/kuba/Downloads/elektronicke_potvrzeni_o_studiu.pdf",
+								"/Users/kuba/Downloads/kode_cloud_kubernetes_certificate.pdf"
+							]
+						}
+					]
+				},
+				"url": {
+					"raw": "{{apiUrl}}/submissions",
+					"host": [
+						"{{apiUrl}}"
+					],
+					"path": [
+						"submissions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get submission",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"url": {
+					"raw": "{{apiUrl}}/submissions/{{submissionId}}",
+					"host": [
+						"{{apiUrl}}"
+					],
+					"path": [
+						"submissions",
+						"{{submissionId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "apiUrl",
+			"value": "localhost:8010/api/v1",
+			"type": "default"
+		},
+		{
+			"key": "submissionId",
+			"value": "1",
+			"type": "default"
+		}
+	]
+}
