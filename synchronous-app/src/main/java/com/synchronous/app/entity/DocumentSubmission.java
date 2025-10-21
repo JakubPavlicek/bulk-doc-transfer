@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -21,7 +22,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
@@ -118,7 +118,8 @@ public class DocumentSubmission {
     private Integer totalFiles;
 
     @OneToMany(mappedBy = "submission")
-    private final Set<SubmissionFile> submissionFiles = new LinkedHashSet<>();
+    @OrderBy(SubmissionFile_.ID)
+    private final Set<SubmissionFile> files = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "submission")
     private final Set<SubmissionStateHistory> submissionStateHistories = new LinkedHashSet<>();

@@ -1,21 +1,20 @@
 package com.synchronous.app.repository;
 
 import com.synchronous.app.entity.DocumentSubmission;
-import com.synchronous.app.entity.SubmissionState;
-import com.synchronous.app.model.SubmissionDetailView;
+import com.synchronous.app.model.SubmissionView;
 import org.jspecify.annotations.NonNull;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.Optional;
 
-public interface DocumentSubmissionRepository extends JpaRepository<@NonNull DocumentSubmission, @NonNull Long> {
+import static com.synchronous.app.entity.DocumentSubmission_.FILES;
+import static com.synchronous.app.entity.DocumentSubmission_.SUBMITTER;
 
-    <T> Optional<T> findById(@NonNull Long id, Class<T> clazz);
+public interface DocumentSubmissionRepository extends JpaRepository<@NonNull DocumentSubmission, @NonNull Long>, JpaSpecificationExecutor<@NonNull DocumentSubmission> {
 
-    Page<@NonNull SubmissionDetailView> findAllBySubmitter_EmailAndState(
-        String submitterEmail, SubmissionState state, Pageable pageable
-    );
+    @EntityGraph(attributePaths = { SUBMITTER, FILES })
+    Optional<SubmissionView> findDocumentSubmissionById(@NonNull Long id);
 
 }

@@ -2,6 +2,7 @@ package com.synchronous.app.service;
 
 import com.synchronous.app.entity.DocumentSubmission;
 import com.synchronous.app.entity.SubmissionFile;
+import com.synchronous.app.entity.SubmissionState;
 import com.synchronous.app.repository.SubmissionFileRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,9 @@ public class SubmissionFileService {
 
     private final SubmissionFileRepository submissionFileRepository;
 
-    public void saveFiles(List<MultipartFile> files, DocumentSubmission submission) {
+    private final SubmissionStateHistoryService stateHistoryService;
+
+    protected void saveFiles(List<MultipartFile> files, DocumentSubmission submission) {
         for (MultipartFile file : files) {
             try {
                 log.info("Saving file: {} for submission ID: {}", file.getOriginalFilename(), submission.getId());
@@ -38,6 +41,8 @@ public class SubmissionFileService {
         }
 
         submission.setTotalFiles(files.size());
+        submission.setState(SubmissionState.SAVED);
+        stateHistoryService.saveStateForSubmission(SubmissionState.SAVED, submission);
     }
 
 }

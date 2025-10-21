@@ -59,15 +59,15 @@ public class SubmissionController implements SubmissionsApi {
     }
 
     @Override
-    public ResponseEntity<@NonNull Void> uploadSubmission(
+    public ResponseEntity<@NonNull Void> createSubmission(
         String email,
         String subject,
         List<MultipartFile> files,
         String description
     ) {
-        log.info("Submission upload requested for email: {}, number of files: {}", email, files.size());
+        log.info("Submission creation requested for email: {}, number of files: {}", email, files.size());
 
-        submissionService.uploadSubmission(email, subject, description, files);
+        submissionService.createSubmission(email, subject, description, files);
 
         return ResponseEntity.accepted().build();
     }

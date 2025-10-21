@@ -4,9 +4,11 @@ import com.synchronous.app.entity.DocumentSubmission;
 import com.synchronous.app.entity.SubmissionCheckResult;
 import com.synchronous.app.entity.SubmissionState;
 import com.synchronous.app.entity.Submitter;
+import com.synchronous.app.mapper.DocumentSubmissionMapper;
 import com.synchronous.app.model.SubmissionDetailView;
 import com.synchronous.app.model.SubmissionView;
 import com.synchronous.app.repository.DocumentSubmissionRepository;
+import com.synchronous.app.repository.specification.SubmissionSpecification;
 import com.synchronous.app.util.ReferenceNumberGenerator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,19 +32,50 @@ public class SubmissionService {
 
     private final DocumentSubmissionRepository submissionRepository;
     private final SubmissionFileService submissionFileService;
+    private final SubmissionStateHistoryService stateHistoryService;
     private final SubmitterService submitterService;
+    private final DocumentSubmissionMapper submissionMapper;
 
     public SubmissionView getSubmission(Long submissionId) {
-        return submissionRepository.findById(submissionId, SubmissionView.class)
+        return submissionRepository.findDocumentSubmissionById(submissionId)
                                    .orElseThrow(() -> new RuntimeException("Submission with ID: " + submissionId + " not found"));
     }
 
     public Page<@NonNull SubmissionDetailView> listSubmissions(String submitterEmail, SubmissionState state, Pageable pageable) {
-        return submissionRepository.findAllBySubmitter_EmailAndState(submitterEmail, state, pageable);
+        Specification<@NonNull DocumentSubmission> spec = Specification.where(SubmissionSpecification.fetchSubmitter());
+
+        if (submitterEmail != null) {
+            spec = spec.and(SubmissionSpecification.hasSubmitterEmail(submitterEmail));
+        }
+        if (state != null) {
+            spec = spec.and(SubmissionSpecification.hasState(state));
+        }
+
+        Page<@NonNull DocumentSubmission> documentSubmissions = submissionRepository.findAll(spec, pageable);
+        return submissionMapper.mapToSubmissionDetailPage(documentSubmissions);
     }
 
-    public void uploadSubmission(String email, String subject, String description, List<MultipartFile> files) {
+    public void createSubmission(String email, String subject, String description, List<MultipartFile> files) {
+        log.info("Creating submission...");
+
+        // Save the submitter and submission
         Submitter submitter = submitterService.findOrSaveSubmitter(email);
+        DocumentSubmission submission = saveSubmission(subject, description, submitter);
+
+        // Check files for electronic signature and malware
+        checkFiles(submission);
+
+        // If files are processed, save them
+        submissionFileService.saveFiles(files, submission);
+
+        // Finally, send a response
+        submission.setState(SubmissionState.RESPONSE_SENT);
+        stateHistoryService.saveStateForSubmission(SubmissionState.RESPONSE_SENT, submission);
+
+        log.info("Submission created successfully");
+    }
+
+    private DocumentSubmission saveSubmission(String subject, String description, Submitter submitter) {
         DocumentSubmission submission = DocumentSubmission.builder()
                                                           .submitter(submitter)
                                                           .subject(subject)
@@ -50,17 +84,9 @@ public class SubmissionService {
                                                           .state(SubmissionState.ACCEPTED)
                                                           .build();
         submissionRepository.save(submission);
+        stateHistoryService.saveStateForSubmission(SubmissionState.ACCEPTED, submission);
 
-        // Check files for electronic signature and malware
-        checkFiles(submission);
-        submission.setState(SubmissionState.PROCESSED);
-
-        // If files are processed, save them
-        submissionFileService.saveFiles(files, submission);
-        submission.setState(SubmissionState.SAVED);
-
-        // Finally, send a response
-        submission.setState(SubmissionState.RESPONSE_SENT);
+        return submission;
     }
 
     /// Checks files for Electronic Signature and Malware
@@ -74,6 +100,8 @@ public class SubmissionService {
         }
 
         submission.setCheckResult(SubmissionCheckResult.OK);
+        submission.setState(SubmissionState.PROCESSED);
+        stateHistoryService.saveStateForSubmission(SubmissionState.PROCESSED, submission);
     }
 
 }

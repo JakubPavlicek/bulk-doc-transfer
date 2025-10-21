@@ -1,11 +1,7 @@
 package com.synchronous.app.model;
 
-import lombok.Data;
+public interface SubmitterView {
 
-@Data
-public class SubmitterView {
-
-    private Long id;
-    private String email;
+    String getEmail();
 
 }

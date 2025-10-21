@@ -8,8 +8,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class ReferenceNumberGenerator {
 
-    private static final char[] CASE_TYPES = { 'C', 'T', 'P' };
-    private static final char[] SENATE_NUMBERS = { '1', '2', '3' };
+    private static final String[] CASE_TYPES = { "C", "T", "P" };
+    private static final String[] SENATE_NUMBERS = { "1", "2", "3" };
     private static final Map<String, Long> SEQUENTIAL_NUMBERS = new HashMap<>();
     private static final Random RANDOM = ThreadLocalRandom.current();
 
@@ -23,8 +23,8 @@ public class ReferenceNumberGenerator {
     /// - Sequential Number – Order number within the case type, senate, and year
     public static String getNextReferenceNumber() {
         // Select a random case type and senate number + current year
-        char selectedCaseType = CASE_TYPES[RANDOM.nextInt(0, 3)];
-        char selectedSenateNumber = SENATE_NUMBERS[RANDOM.nextInt(0, 3)];
+        String selectedCaseType = CASE_TYPES[RANDOM.nextInt(0, 3)];
+        String selectedSenateNumber = SENATE_NUMBERS[RANDOM.nextInt(0, 3)];
         String currentYear = Year.now().toString();
 
         // Build the reference number part

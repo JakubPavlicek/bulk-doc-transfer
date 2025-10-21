@@ -1,21 +1,18 @@
 package com.synchronous.app.model;
 
-import lombok.Data;
-
 import java.time.Instant;
 import java.util.List;
 
-@Data
-public class SubmissionView {
+public interface SubmissionView {
 
-    private Long id;
-    private SubmitterView submitter;
-    private String subject;
-    private String description;
-    private String referenceNumber;
-    private Instant createdAt;
-    private String state;
-    private String checkResult;
-    private List<FileView> files;
+    Long getId();
+    SubmitterView getSubmitter();
+    String getSubject();
+    String getDescription();
+    String getReferenceNumber();
+    Instant getCreatedAt();
+    String getState();
+    String getCheckResult();
+    List<FileView> getFiles();
 
 }
