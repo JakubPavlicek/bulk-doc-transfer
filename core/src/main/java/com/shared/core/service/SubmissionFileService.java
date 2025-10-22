@@ -3,6 +3,8 @@ package com.shared.core.service;
 import com.shared.core.entity.DocumentSubmission;
 import com.shared.core.entity.SubmissionFile;
 import com.shared.core.entity.SubmissionState;
+import com.shared.core.exception.SubmissionFileNotFoundException;
+import com.shared.core.exception.SubmissionFileSaveException;
 import com.shared.core.repository.SubmissionFileRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -36,13 +38,18 @@ public class SubmissionFileService {
                                                               .build();
                 submissionFileRepository.save(submissionFile);
             } catch (IOException e) {
-                throw new RuntimeException("Error saving file: " + file.getOriginalFilename());
+                throw new SubmissionFileSaveException(file.getOriginalFilename());
             }
         }
 
         submission.setTotalFiles(files.size());
         submission.setState(SubmissionState.SAVED);
         stateHistoryService.saveStateForSubmission(SubmissionState.SAVED, submission);
+    }
+
+    protected SubmissionFile getSubmissionFile(DocumentSubmission submission, Long fileId) {
+        return submissionFileRepository.findBySubmissionAndId(submission, fileId)
+                                       .orElseThrow(() -> new SubmissionFileNotFoundException(submission.getId(), fileId));
     }
 
 }

@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface SubmissionService {
 
-    void createSubmission(String email, String subject, String description, List<MultipartFile> files);
+    Long createSubmission(String email, String subject, String description, List<MultipartFile> files);
 
 }

@@ -28,7 +28,7 @@ public class SubmissionServiceImpl implements SubmissionService {
     private final SubmitterService submitterService;
 
     @Override
-    public void createSubmission(String email, String subject, String description, List<MultipartFile> files) {
+    public Long createSubmission(String email, String subject, String description, List<MultipartFile> files) {
         log.info("Creating submission...");
 
         // Save the submitter and submission
@@ -46,6 +46,8 @@ public class SubmissionServiceImpl implements SubmissionService {
         stateHistoryService.saveStateForSubmission(SubmissionState.RESPONSE_SENT, submission);
 
         log.info("Submission created successfully");
+
+        return submission.getId();
     }
 
 }

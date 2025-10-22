@@ -2,8 +2,10 @@ package com.shared.core.service;
 
 import com.shared.core.entity.DocumentSubmission;
 import com.shared.core.entity.SubmissionCheckResult;
+import com.shared.core.entity.SubmissionFile;
 import com.shared.core.entity.SubmissionState;
 import com.shared.core.entity.Submitter;
+import com.shared.core.exception.SubmissionNotFoundException;
 import com.shared.core.mapper.DocumentSubmissionMapper;
 import com.shared.core.model.SubmissionDetailView;
 import com.shared.core.model.SubmissionView;
@@ -35,7 +37,7 @@ public class DocumentSubmissionService {
 
     public SubmissionView getSubmission(Long submissionId) {
         return submissionRepository.findDocumentSubmissionById(submissionId)
-                                   .orElseThrow(() -> new RuntimeException("Submission with ID: " + submissionId + " not found"));
+                                   .orElseThrow(() -> new SubmissionNotFoundException(submissionId));
     }
 
     public Page<@NonNull SubmissionDetailView> listSubmissions(String submitterEmail, SubmissionState state, Pageable pageable) {
@@ -79,6 +81,13 @@ public class DocumentSubmissionService {
         submission.setCheckResult(SubmissionCheckResult.OK);
         submission.setState(SubmissionState.PROCESSED);
         stateHistoryService.saveStateForSubmission(SubmissionState.PROCESSED, submission);
+    }
+
+    public SubmissionFile getSubmissionFile(Long submissionId, Long fileId) {
+        DocumentSubmission submission = submissionRepository.findById(submissionId)
+                                                            .orElseThrow(() -> new SubmissionNotFoundException(submissionId));
+
+        return submissionFileService.getSubmissionFile(submission, fileId);
     }
 
 }

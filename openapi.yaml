@@ -60,7 +60,11 @@ paths:
               $ref: '#/components/schemas/CreateSubmission'
       responses:
         '202':
-          description: Submission accepted.
+          description: Submission created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmissionResponse'
         '400':
           $ref: '#/components/responses/400BadRequest'
         '500':
@@ -84,6 +88,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Submission'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/500InternalServerError'
+        'default':
+          $ref: '#/components/responses/Default'
+
+  /submissions/{submissionId}/files/{fileId}:
+    get:
+      tags:
+        - submissions
+      summary: Download submission file
+      description: Download submission file by ID.
+      operationId: downloadSubmissionFile
+      parameters:
+        - $ref: '#/components/parameters/SubmissionId'
+        - $ref: '#/components/parameters/SubmissionFileId'
+      responses:
+        '200':
+          description: Submission file downloaded successfully.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              description: The name of the file.
+              schema:
+                type: string
+                example: 'attachment; filename="document.pdf"'
+            Content-Length:
+              description: The file size in bytes.
+              schema:
+                type: integer
+                format: int64
+                example: 17500
         '400':
           $ref: '#/components/responses/400BadRequest'
         '404':
@@ -125,6 +168,18 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/DocumentSubmissionState'
+
+    SubmissionFileId:
+      name: fileId
+      in: path
+      description: Parameter for the submission file ID.
+      required: true
+      schema:
+        type: integer
+        format: int64
+        description: ID of the file.
+        minimum: 1
+        example: 1
 
     Page:
       name: page
@@ -357,11 +412,23 @@ components:
         files:
           - file1.pdf
 
+    SubmissionResponse:
+      title: SubmissionResponse
+      type: object
+      description: Created submission ID.
+      additionalProperties: false
+      required:
+        - submissionId
+      properties:
+        submissionId:
+          $ref: '#/components/schemas/SubmissionId'
+
     # -------------------------------------------------------------
     # Page section
     # -------------------------------------------------------------
 
     SubmissionPage:
+      title: Submission Page
       type: object
       description: "Represents a page of submissions, including pagination information."
       additionalProperties: false
@@ -436,6 +503,7 @@ components:
           example: false
 
     SortDTO:
+      title: Sort
       type: object
       description: "Represents sorting information for ordering query results based on one or more criteria."
       additionalProperties: false
@@ -464,6 +532,7 @@ components:
             If `true`, the query results are not sorted according to any criteria.
 
     PageableDTO:
+      title: Pageable
       type: object
       description: "Represents pagination and sorting information for querying a paginated dataset."
       additionalProperties: false
