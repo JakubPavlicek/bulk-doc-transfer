@@ -11,7 +11,6 @@ import com.shared.core.model.SubmissionDetailView;
 import com.shared.core.model.SubmissionView;
 import com.shared.core.repository.DocumentSubmissionRepository;
 import com.shared.core.repository.specification.SubmissionSpecification;
-import com.shared.core.util.ReferenceNumberGenerator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +31,6 @@ public class DocumentSubmissionService {
     private final DocumentSubmissionRepository submissionRepository;
     private final SubmissionFileService submissionFileService;
     private final SubmissionStateHistoryService stateHistoryService;
-    private final SubmitterService submitterService;
     private final DocumentSubmissionMapper submissionMapper;
 
     public SubmissionView getSubmission(Long submissionId) {
@@ -55,16 +53,8 @@ public class DocumentSubmissionService {
     }
 
     public DocumentSubmission saveSubmission(String subject, String description, Submitter submitter) {
-        DocumentSubmission submission = DocumentSubmission.builder()
-                                                          .submitter(submitter)
-                                                          .subject(subject)
-                                                          .description(description)
-                                                          .referenceNumber(ReferenceNumberGenerator.getNextReferenceNumber())
-                                                          .state(SubmissionState.ACCEPTED)
-                                                          .build();
-        submissionRepository.save(submission);
-        stateHistoryService.saveStateForSubmission(SubmissionState.ACCEPTED, submission);
-
+        DocumentSubmission submission = submissionMapper.toDocumentSubmission(subject, description, submitter);
+        updateSubmissionState(submission, SubmissionState.ACCEPTED);
         return submission;
     }
 
@@ -72,22 +62,31 @@ public class DocumentSubmissionService {
     public void checkFiles(DocumentSubmission submission) {
         try {
             log.info("Processing files...");
-            Thread.sleep(SECONDS.toMillis(5)); // Simulate processing delay
+            Thread.sleep(SECONDS.toMillis(1)); // Simulate processing delay
             log.info("Files processed");
         } catch (InterruptedException e) {
             throw new RuntimeException("Error processing files");
         }
 
         submission.setCheckResult(SubmissionCheckResult.OK);
-        submission.setState(SubmissionState.PROCESSED);
-        stateHistoryService.saveStateForSubmission(SubmissionState.PROCESSED, submission);
+        updateSubmissionState(submission, SubmissionState.PROCESSED);
+    }
+
+    public void updateSubmissionState(DocumentSubmission submission, SubmissionState newState) {
+        submission.setState(newState);
+        submissionRepository.save(submission);
+        stateHistoryService.saveStateForSubmission(newState, submission);
     }
 
     public SubmissionFile getSubmissionFile(Long submissionId, Long fileId) {
-        DocumentSubmission submission = submissionRepository.findById(submissionId)
-                                                            .orElseThrow(() -> new SubmissionNotFoundException(submissionId));
+        DocumentSubmission submission = findSubmissionById(submissionId);
 
         return submissionFileService.getSubmissionFile(submission, fileId);
+    }
+
+    public DocumentSubmission findSubmissionById(Long submissionId) {
+        return submissionRepository.findById(submissionId)
+                                   .orElseThrow(() -> new SubmissionNotFoundException(submissionId));
     }
 
 }

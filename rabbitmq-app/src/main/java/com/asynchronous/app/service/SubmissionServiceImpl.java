@@ -1,10 +1,10 @@
-package com.synchronous.app.service;
+package com.asynchronous.app.service;
 
+import com.asynchronous.app.mapper.SubmissionFileMessageMapper;
+import com.asynchronous.app.model.FileMessage;
 import com.shared.core.entity.DocumentSubmission;
-import com.shared.core.entity.SubmissionState;
 import com.shared.core.entity.Submitter;
 import com.shared.core.service.DocumentSubmissionService;
-import com.shared.core.service.SubmissionFileService;
 import com.shared.core.service.SubmissionService;
 import com.shared.core.service.SubmitterService;
 import jakarta.transaction.Transactional;
@@ -22,8 +22,9 @@ import java.util.List;
 public class SubmissionServiceImpl implements SubmissionService {
 
     private final DocumentSubmissionService documentSubmissionService;
-    private final SubmissionFileService submissionFileService;
     private final SubmitterService submitterService;
+    private final SubmissionAsyncService submissionAsyncService;
+    private final SubmissionFileMessageMapper submissionFileMapper;
 
     @Override
     public Long createSubmission(String email, String subject, String description, List<MultipartFile> files) {
@@ -33,16 +34,11 @@ public class SubmissionServiceImpl implements SubmissionService {
         Submitter submitter = submitterService.findOrSaveSubmitter(email);
         DocumentSubmission submission = documentSubmissionService.saveSubmission(subject, description, submitter);
 
-        // Check files for electronic signature and malware
-        documentSubmissionService.checkFiles(submission);
+        // Convert MultipartFile to FileMessage eagerly to avoid NoSuchFileException in async processing
+        List<FileMessage> fileMessages = submissionFileMapper.toFileMessages(files);
 
-        // If files are processed, save them
-        submissionFileService.saveFiles(files, submission);
-
-        // Finally, send a response
-        documentSubmissionService.updateSubmissionState(submission, SubmissionState.RESPONSE_SENT);
-
-        log.info("Submission created successfully");
+        // Process the submission asynchronously
+        submissionAsyncService.processSubmission(submission, fileMessages);
 
         return submission.getId();
     }

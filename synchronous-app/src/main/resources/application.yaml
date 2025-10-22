@@ -9,6 +9,11 @@ spring:
   jackson:
     mapper:
       sort-properties-alphabetically: false
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
+      max-request-size: 101MB
   sql:
     init:
       mode: always  # Always execute the schema.sql

@@ -4,7 +4,9 @@ import com.asynchronous.app.config.RabbitMQProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.scheduling.annotation.EnableAsync;
 
+@EnableAsync
 @EnableConfigurationProperties(RabbitMQProperties.class)
 @SpringBootApplication(scanBasePackages = { "com.asynchronous", "com.shared" })
 public class RabbitmqAppApplication {

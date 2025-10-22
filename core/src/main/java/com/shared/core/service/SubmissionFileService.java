@@ -4,7 +4,7 @@ import com.shared.core.entity.DocumentSubmission;
 import com.shared.core.entity.SubmissionFile;
 import com.shared.core.entity.SubmissionState;
 import com.shared.core.exception.SubmissionFileNotFoundException;
-import com.shared.core.exception.SubmissionFileSaveException;
+import com.shared.core.mapper.SubmissionFileMapper;
 import com.shared.core.repository.SubmissionFileRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @Slf4j
@@ -22,29 +21,35 @@ import java.util.List;
 public class SubmissionFileService {
 
     private final SubmissionFileRepository submissionFileRepository;
-
     private final SubmissionStateHistoryService stateHistoryService;
+    private final SubmissionFileMapper submissionFileMapper;
 
-    public void saveFiles(List<MultipartFile> files, DocumentSubmission submission) {
-        for (MultipartFile file : files) {
-            try {
-                log.info("Saving file: {} for submission ID: {}", file.getOriginalFilename(), submission.getId());
-                SubmissionFile submissionFile = SubmissionFile.builder()
-                                                              .submission(submission)
-                                                              .name(file.getOriginalFilename())
-                                                              .type(file.getContentType())
-                                                              .size(file.getSize())
-                                                              .content(file.getBytes())
-                                                              .build();
-                submissionFileRepository.save(submissionFile);
-            } catch (IOException e) {
-                throw new SubmissionFileSaveException(file.getOriginalFilename());
+    public <T> void saveFiles(List<T> files, DocumentSubmission submission) {
+        log.info("Saving {} files for submission ID: {}", files.size(), submission.getId());
+
+        // Save the files
+        files.forEach(file -> {
+            switch (file) {
+                case MultipartFile mf -> saveFile(mf, submission);
+                case SubmissionFile sf -> saveFile(sf, submission);
+                default -> throw new IllegalStateException("Unexpected value: " + file);
             }
-        }
+        });
 
         submission.setTotalFiles(files.size());
         submission.setState(SubmissionState.SAVED);
         stateHistoryService.saveStateForSubmission(SubmissionState.SAVED, submission);
+    }
+
+    private void saveFile(MultipartFile file, DocumentSubmission submission) {
+        log.info("Saving MultipartFile: {} for submission ID: {}", file.getOriginalFilename(), submission.getId());
+        SubmissionFile submissionFile = submissionFileMapper.toSubmissionFile(file, submission);
+        submissionFileRepository.save(submissionFile);
+    }
+
+    private void saveFile(SubmissionFile submissionFile, DocumentSubmission submission) {
+        log.info("Saving SubmissionFile: {} for submission ID: {}", submissionFile.getName(), submission.getId());
+        submissionFileRepository.save(submissionFile);
     }
 
     protected SubmissionFile getSubmissionFile(DocumentSubmission submission, Long fileId) {
