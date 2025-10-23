@@ -1,8 +1,9 @@
 services:
   jms-app:
     container_name: jms-app
-    image: jms-app:1.0.0
-    pull_policy: never
+    build:
+      context: ./jms-app
+      dockerfile: Dockerfile
     environment:
       THC_PATH: /actuator/health
       THC_PORT: 8020
@@ -11,13 +12,13 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    healthcheck:
-      test: [ "CMD", "/workspace/health-check" ]
-      start_period: 8s
-      timeout: 5s
-      retries: 5
+#    healthcheck:
+#      test: [ "CMD", "/workspace/health-check" ]
+#      start_period: 8s
+#      timeout: 5s
+#      retries: 5
     ports:
-      - "8030:8030"
+      - "8080:8080"
     networks:
       - backend
       - frontend
@@ -26,6 +27,6 @@ services:
     extends:
       file: docker-compose.yaml
       service: next-client
-    depends_on:
-      jms-app:
-        condition: service_healthy
+#    depends_on:
+#      jms-app:
+#        condition: service_healthy

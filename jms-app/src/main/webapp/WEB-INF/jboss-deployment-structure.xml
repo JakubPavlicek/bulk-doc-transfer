@@ -1,0 +1,16 @@
+<jboss-deployment-structure>
+    <deployment>
+        <exclusions>
+            <module name="jakarta.persistence.api"/>
+            <module name="org.hibernate"/>
+            <module name="com.fasterxml.jackson.core.jackson-core"/>
+            <module name="com.fasterxml.jackson.core.jackson-databind"/>
+            <module name="com.fasterxml.jackson.core.jackson-annotations"/>
+            <module name="com.fasterxml.jackson.datatype.jackson-datatype-jdk8"/>
+            <module name="com.fasterxml.jackson.datatype.jackson-datatype-jsr310"/>
+        </exclusions>
+        <exclude-subsystems>
+            <subsystem name="jpa"/>
+        </exclude-subsystems>
+    </deployment>
+</jboss-deployment-structure>

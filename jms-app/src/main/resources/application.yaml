@@ -1,3 +1,67 @@
+server:
+  compression:
+    enabled: true
+
 spring:
   application:
     name: jms-app
+  jackson:
+    mapper:
+      sort-properties-alphabetically: false
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
+      max-request-size: 101MB
+  sql:
+    init:
+      mode: always  # Always execute the schema.sql
+      continue-on-error: true  # Skip execution of schema.sql if the db already exists
+  jpa:
+    properties:
+      hibernate:
+        order_inserts: true
+        order_updates: true
+        connection:
+          provider_disables_autocommit: true
+        query:
+          in_clause_parameter_padding: true
+          fail_on_pagination_over_collection_fetch: true
+          plan_cache_max_size: 4096
+        jdbc:
+          fetch_size: 50
+          batch_size: 10
+        generate_statistics: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    show-sql: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/doc_submission_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      auto-commit: false
+      minimum-idle: 5
+      maximum-pool-size: 30
+      idle-timeout: 600000
+      connection-timeout: 30000
+      max-lifetime: 1800000
+  mvc:
+    problemdetails:
+      enabled: true
+  threads:
+    virtual:
+      enabled: true
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    url: /openapi.yaml
+
+logging:
+  level:
+    root: info
