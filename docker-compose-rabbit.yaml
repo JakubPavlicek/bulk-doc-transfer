@@ -41,12 +41,3 @@ services:
       - "8020:8020"
     networks:
       - backend
-      - frontend
-
-  next-client:
-    extends:
-      file: docker-compose.yaml
-      service: next-client
-    depends_on:
-      rabbitmq-app:
-        condition: service_healthy

@@ -20,12 +20,3 @@ services:
       - "8010:8010"
     networks:
       - backend
-      - frontend
-
-  next-client:
-    extends:
-      file: docker-compose.yaml
-      service: next-client
-    depends_on:
-      synchronous-app:
-        condition: service_healthy

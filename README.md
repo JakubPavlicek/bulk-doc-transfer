@@ -67,8 +67,12 @@ This will help compare the performance and scalability of the three processing a
 
 ## Implementation
 
-The backend applications are implemented in Spring Boot 4.0.0 and Java 25.  
-The frontend is implemented in Next.js 15.5.6, React 19.2.0 and TypeScript 5.9.3.
+The backend applications are implemented with the following technologies:
+- **database**: PostgreSQL 18.
+- **core**: Spring Boot 4.0.0 and Java 21.
+- **jms-app**: Spring Boot 4.0.0, Java 21, and WildFly 38.0.0.
+- **rabbitmq-app**: Spring Boot 4.0.0, Java 25, and RabbitMQ 4.1.4.
+- **synchronous-app**: Spring Boot 4.0.0 and Java 25.
 
 ### Database
 
