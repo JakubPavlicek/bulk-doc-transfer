@@ -6,10 +6,10 @@ import com.shared.core.entity.SubmissionState;
 import com.shared.core.exception.SubmissionFileNotFoundException;
 import com.shared.core.mapper.SubmissionFileMapper;
 import com.shared.core.repository.SubmissionFileRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;

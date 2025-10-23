@@ -7,10 +7,10 @@ import com.shared.core.entity.Submitter;
 import com.shared.core.service.DocumentSubmissionService;
 import com.shared.core.service.SubmissionService;
 import com.shared.core.service.SubmitterService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;

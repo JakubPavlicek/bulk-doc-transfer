@@ -5,7 +5,6 @@ import com.asynchronous.app.model.SubmissionMessage;
 import com.shared.core.entity.DocumentSubmission;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
@@ -16,9 +15,6 @@ import java.util.List;
 @Service
 public class JmsProducer {
 
-    @Value("${spring.jms.jndi-name}")
-    private String destination;
-
     private final JmsTemplate jmsTemplate;
 
     public void sendSubmissionMessage(DocumentSubmission submission, List<FileMessage> fileMessages) {
@@ -26,10 +22,7 @@ public class JmsProducer {
 
         SubmissionMessage message = new SubmissionMessage(submission.getId(), fileMessages);
 
-        jmsTemplate.convertAndSend(
-            destination,
-            message
-        );
+        jmsTemplate.convertAndSend(message);
     }
 
 }

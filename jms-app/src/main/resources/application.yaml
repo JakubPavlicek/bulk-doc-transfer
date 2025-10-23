@@ -13,8 +13,13 @@ spring:
       enabled: true
       max-file-size: 20MB
       max-request-size: 101MB
+  artemis:
+    embedded:
+      enabled: false
   jms:
-    jndi-name: "java:/jms/queue/submissionQueue"
+    jndi-name: "java:/ConnectionFactory"
+    template:
+      default-destination: "java:/jms/queue/submissionQueue"
   sql:
     init:
       mode: always  # Always execute the schema.sql

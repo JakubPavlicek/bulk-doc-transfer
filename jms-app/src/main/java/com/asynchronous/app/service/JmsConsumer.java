@@ -24,7 +24,7 @@ public class JmsConsumer {
     private final SubmissionFileService submissionFileService;
     private final SubmissionFileMessageMapper submissionFileMapper;
 
-    @JmsListener(destination = "${spring.jms.jndi-name}")
+    @JmsListener(destination = "java:/jms/queue/submissionQueue")
     public void receiveSubmissionMessage(SubmissionMessage message) {
         Long submissionId = message.submissionId();
         List<FileMessage> files = message.files();
