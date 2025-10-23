@@ -13,6 +13,8 @@ spring:
       enabled: true
       max-file-size: 20MB
       max-request-size: 101MB
+  jms:
+    jndi-name: "java:/jms/queue/submissionQueue"
   sql:
     init:
       mode: always  # Always execute the schema.sql
