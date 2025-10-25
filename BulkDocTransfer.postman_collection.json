@@ -12,7 +12,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{apiUrl}}/submissions?submitterEmail=jpvlck@students.zcu.cz&page=0&size=10",
+					"raw": "{{apiUrl}}/submissions?page=0&size=10",
 					"host": [
 						"{{apiUrl}}"
 					],
@@ -22,7 +22,8 @@
 					"query": [
 						{
 							"key": "submitterEmail",
-							"value": "jpvlck@students.zcu.cz"
+							"value": "jpvlck@students.zcu.cz",
+							"disabled": true
 						},
 						{
 							"key": "state",
@@ -68,10 +69,7 @@
 						{
 							"key": "files",
 							"type": "file",
-							"src": [
-								"/Users/kuba/Downloads/elektronicke_potvrzeni_o_studiu.pdf",
-								"/Users/kuba/Downloads/kode_cloud_kubernetes_certificate.pdf"
-							]
+							"src": "/Users/kuba/Downloads/standalone-full.xml"
 						}
 					]
 				},
@@ -111,6 +109,33 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Download submission file",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"url": {
+					"raw": "{{apiUrl}}/submissions/{{submissionId}}/files/{{fileId}}",
+					"host": [
+						"{{apiUrl}}"
+					],
+					"path": [
+						"submissions",
+						"{{submissionId}}",
+						"files",
+						"{{fileId}}"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
@@ -141,12 +166,17 @@
 		{
 			"key": "apiUrl",
 			"value": "localhost:8010/api/v1",
-			"type": "default"
+			"type": "string"
 		},
 		{
 			"key": "submissionId",
 			"value": "1",
-			"type": "default"
+			"type": "number"
+		},
+		{
+			"key": "fileId",
+			"value": "1",
+			"type": "number"
 		}
 	]
 }

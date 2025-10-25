@@ -77,3 +77,31 @@ The backend applications are implemented with the following technologies:
 ### Database
 
 <img src="database.png" alt="Database Schema" width="2000">
+
+### Docker
+
+Every command is executed from the root directory of the project.
+
+#### Build Images
+
+Build Synchronous and RabbitMQ App images: `mvn -T 1C spring-boot:build-image -DskipTests`
+
+JMS App image is built automatically using Docker Compose.
+
+#### Run Applications
+
+Synchronous App: `docker compose --profile synchronous up -d`
+
+RabbitMQ App: `docker compose --profile rabbit up -d`
+
+JMS App: `docker compose --profile jms up -d --build`
+
+### Applications
+
+- **Synchronous App**: `http://localhost:8010/swagger-ui.html`
+- **RabbitMQ App**: `http://localhost:8020/swagger-ui.html`
+- **JMS App**: `http://localhost:8080/swagger-ui.html`
+
+Every REST API endpoint is prefixed with /api/v1. Example: `http://localhost:8080/api/v1/submissions`
+
+See the provided [Postman Collection](BulkDocTransfer.postman_collection.json) for more details.
