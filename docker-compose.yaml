@@ -120,8 +120,45 @@ services:
     networks:
       - backend
 
+  # ----- Observability -----
+
+  grafana:
+    profiles:
+      - observability
+    container_name: grafana
+    image: grafana/grafana:latest
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    volumes:
+      - ./observability/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/default.yml
+      - ./observability/grafana-dashboard.yaml:/etc/grafana/provisioning/dashboards/default.yml
+      - ./observability/k6_dashboard.json:/etc/grafana/provisioning/dashboards/default.json
+    ports:
+      - "3000:3000"
+    networks:
+      - k6
+
+  prometheus:
+    profiles:
+      - observability
+    container_name: prometheus
+    image: prom/prometheus:latest
+    command: [
+      --config.file=/etc/prometheus/prometheus.yml,
+      --web.enable-otlp-receiver,
+      --web.enable-remote-write-receiver
+    ]
+    volumes:
+      - ./observability/prometheus-config.yaml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - k6
+
 networks:
   backend:
+  k6:
 
 volumes:
   postgres_data:

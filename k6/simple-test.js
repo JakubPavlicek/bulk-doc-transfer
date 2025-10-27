@@ -7,7 +7,7 @@ const txtFileData = open(`data/txt/${smallestTxtFile.name}`, "b");
 
 export const options = {
   vus: 1,
-  iterations: 10,
+  iterations: 100,
 };
 
 const BASE_URL = "http://localhost:8010";
