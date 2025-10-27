@@ -136,6 +136,27 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Delete submissions",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"url": {
+					"raw": "{{apiUrl}}/submissions",
+					"host": [
+						"{{apiUrl}}"
+					],
+					"path": [
+						"submissions"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
