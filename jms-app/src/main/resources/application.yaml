@@ -45,7 +45,7 @@ spring:
     open-in-view: false
     show-sql: true
   datasource:
-    url: jdbc:postgresql://localhost:5432/doc_submission_db
+    url: jdbc:postgresql://localhost:5431/doc_submission_db
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver

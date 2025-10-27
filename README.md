@@ -84,7 +84,7 @@ Every command is executed from the root directory of the project.
 
 #### Build Images
 
-Build Synchronous and RabbitMQ App images: `mvn -T 1C spring-boot:build-image -DskipTests`
+Build Synchronous and RabbitMQ App images: `mvn -T 1C -DskipTests package spring-boot:build-image`
 
 JMS App image is built automatically using Docker Compose.
 

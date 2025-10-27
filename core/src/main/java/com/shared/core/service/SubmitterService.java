@@ -31,4 +31,8 @@ public class SubmitterService {
         return submitterRepository.save(submitter);
     }
 
+    public void deleteAll() {
+        submitterRepository.deleteAll();
+    }
+
 }

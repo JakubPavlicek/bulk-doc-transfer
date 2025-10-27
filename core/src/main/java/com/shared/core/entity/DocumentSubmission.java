@@ -1,5 +1,6 @@
 package com.shared.core.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -117,11 +118,11 @@ public class DocumentSubmission {
     @Column(name = "total_files")
     private Integer totalFiles;
 
-    @OneToMany(mappedBy = "submission")
+    @OneToMany(mappedBy = "submission", cascade = CascadeType.REMOVE)
     @OrderBy("id")
     private final Set<SubmissionFile> files = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "submission")
+    @OneToMany(mappedBy = "submission", cascade = CascadeType.REMOVE)
     private final Set<SubmissionStateHistory> submissionStateHistories = new LinkedHashSet<>();
 
 }

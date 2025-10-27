@@ -51,6 +51,13 @@ public class SubmissionController implements SubmissionsApi {
     }
 
     @Override
+    public ResponseEntity<@NonNull Void> deleteSubmissions() {
+        documentSubmissionService.deleteSubmissions();
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
     public ResponseEntity<@NonNull Resource> downloadSubmissionFile(Long submissionId, Long fileId) {
         SubmissionFile file = documentSubmissionService.getSubmissionFile(submissionId, fileId);
         Resource resource = new ByteArrayResource(file.getContent());

@@ -31,6 +31,7 @@ public class DocumentSubmissionService {
     private final DocumentSubmissionRepository submissionRepository;
     private final SubmissionFileService submissionFileService;
     private final SubmissionStateHistoryService stateHistoryService;
+    private final SubmitterService submitterService;
     private final DocumentSubmissionMapper submissionMapper;
 
     public SubmissionView getSubmission(Long submissionId) {
@@ -87,6 +88,15 @@ public class DocumentSubmissionService {
     public DocumentSubmission findSubmissionById(Long submissionId) {
         return submissionRepository.findById(submissionId)
                                    .orElseThrow(() -> new SubmissionNotFoundException(submissionId));
+    }
+
+    public void deleteSubmissions() {
+        // Delete all submissions with files and submitters
+        submissionRepository.deleteAll();
+        submitterService.deleteAll();
+
+        // Reset sequences
+        submissionRepository.resetSequences();
     }
 
 }
