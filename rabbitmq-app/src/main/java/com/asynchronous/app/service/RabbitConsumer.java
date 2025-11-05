@@ -32,9 +32,12 @@ public class RabbitConsumer {
         log.info("Received message for submission ID: {} with {} files", submissionId, files.size());
 
         DocumentSubmission submission = documentSubmissionService.findSubmissionById(submissionId);
-        List<SubmissionFile> submissionFiles = submissionFileMapper.toSubmissionFiles(files, submission);
+
+        // Check files for electronic signature and malware
+        documentSubmissionService.checkFiles(submission);
 
         // Save the files
+        List<SubmissionFile> submissionFiles = submissionFileMapper.toSubmissionFiles(files, submission);
         submissionFileService.saveFiles(submissionFiles, submission);
 
         // Finally, update the submission state

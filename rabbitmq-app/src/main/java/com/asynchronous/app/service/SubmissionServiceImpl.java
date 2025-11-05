@@ -23,8 +23,8 @@ public class SubmissionServiceImpl implements SubmissionService {
 
     private final DocumentSubmissionService documentSubmissionService;
     private final SubmitterService submitterService;
-    private final SubmissionAsyncService submissionAsyncService;
     private final SubmissionFileMessageMapper submissionFileMapper;
+    private final RabbitProducer rabbitProducer;
 
     @Override
     public Long createSubmission(String email, String subject, String description, List<MultipartFile> files) {
@@ -34,11 +34,9 @@ public class SubmissionServiceImpl implements SubmissionService {
         Submitter submitter = submitterService.findOrSaveSubmitter(email);
         DocumentSubmission submission = documentSubmissionService.saveSubmission(subject, description, submitter);
 
-        // Convert MultipartFile to FileMessage eagerly to avoid NoSuchFileException in async processing
+        // Send the submission with files to the queue
         List<FileMessage> fileMessages = submissionFileMapper.toFileMessages(files);
-
-        // Process the submission asynchronously
-        submissionAsyncService.processSubmission(submission, fileMessages);
+        rabbitProducer.sendSubmissionMessage(submission, fileMessages);
 
         return submission.getId();
     }
