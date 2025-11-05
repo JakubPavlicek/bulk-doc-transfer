@@ -32,11 +32,9 @@ spring:
         jdbc:
           fetch_size: 50
           batch_size: 10
-        generate_statistics: true
     hibernate:
       ddl-auto: validate
     open-in-view: false
-    show-sql: true
   datasource:
     url: jdbc:postgresql://localhost:5431/doc_submission_db
     username: postgres
@@ -91,7 +89,6 @@ management:
         host: http://elasticsearch:9200
         index: rabbitmq-app-metrics
         step: 15s
-        enable-source: true
   simple:
     metrics:
       export:

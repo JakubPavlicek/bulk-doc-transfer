@@ -40,12 +40,7 @@ For additional information, see [k6 documentation](https://grafana.com/docs/k6/l
   ... [INFO] Build complete: ./k6
   ```
 
-2. Start Docker containers with a k6 profile set, e.g.:
-    ```shell
-    docker compose --profile synchronous --profile k6 up -d
-    ```
-
-3. Run tests and export metrics to Elasticsearch:
+2. Run tests and export metrics to Elasticsearch:
     ```shell
     K6_ELASTICSEARCH_URL=http://localhost:9200 \
     ./k6 run simple-test.js -o output-elasticsearch
