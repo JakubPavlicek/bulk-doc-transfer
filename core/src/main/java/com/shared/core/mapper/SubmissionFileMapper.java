@@ -2,6 +2,7 @@ package com.shared.core.mapper;
 
 import com.shared.core.entity.DocumentSubmission;
 import com.shared.core.entity.SubmissionFile;
+import com.shared.core.exception.FileProcessingEexception;
 import org.mapstruct.Mapper;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,7 +21,7 @@ public interface SubmissionFileMapper {
                                  .content(file.getBytes())
                                  .build();
         } catch (IOException e) {
-            throw new RuntimeException("Could not read file: " + file.getOriginalFilename(), e);
+            throw new FileProcessingEexception("Could not read file: " + file.getOriginalFilename(), e);
         }
     }
 

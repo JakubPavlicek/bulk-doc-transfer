@@ -404,9 +404,15 @@ components:
         email:
           $ref: '#/components/schemas/SubmitterEmail'
         subject:
-          $ref: '#/components/schemas/Submission/properties/subject'
+          type: string
+          description: Subject of the submission.
+          example: "The subject of the submission"
+          maxLength: 2000
         description:
-          $ref: '#/components/schemas/Submission/properties/description'
+          description: Description of the submission.
+          type: string
+          example: "This is a detailed description of the submission."
+          maxLength: 32000
         files:
           title: Files
           description: Files to be uploaded.

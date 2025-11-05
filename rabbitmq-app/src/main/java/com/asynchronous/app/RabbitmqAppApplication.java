@@ -1,12 +1,13 @@
 package com.asynchronous.app;
 
 import com.asynchronous.app.config.RabbitMQProperties;
+import com.shared.core.exception.GlobalExceptionHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.context.annotation.Import;
 
-@EnableAsync
+@Import(GlobalExceptionHandler.class)
 @EnableConfigurationProperties(RabbitMQProperties.class)
 @SpringBootApplication(scanBasePackages = { "com.asynchronous", "com.shared" })
 public class RabbitmqAppApplication {

@@ -5,6 +5,7 @@ import com.shared.core.entity.SubmissionCheckResult;
 import com.shared.core.entity.SubmissionFile;
 import com.shared.core.entity.SubmissionState;
 import com.shared.core.entity.Submitter;
+import com.shared.core.exception.FileProcessingEexception;
 import com.shared.core.exception.SubmissionNotFoundException;
 import com.shared.core.mapper.DocumentSubmissionMapper;
 import com.shared.core.model.SubmissionDetailView;
@@ -59,14 +60,14 @@ public class DocumentSubmissionService {
         return submission;
     }
 
-    /// Checks files for Electronic Signature and Malware
+    /** Checks files for Electronic Signature and Malware */
     public void checkFiles(DocumentSubmission submission) {
         try {
             log.info("Processing files...");
             Thread.sleep(SECONDS.toMillis(1)); // Simulate processing delay
             log.info("Files processed");
-        } catch (InterruptedException e) {
-            throw new RuntimeException("Error processing files");
+        } catch (Exception e) {
+            throw new FileProcessingEexception("Error processing files", e);
         }
 
         submission.setCheckResult(SubmissionCheckResult.OK);

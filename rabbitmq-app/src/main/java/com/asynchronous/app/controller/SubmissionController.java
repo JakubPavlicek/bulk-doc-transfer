@@ -1,17 +1,18 @@
 package com.asynchronous.app.controller;
 
-import com.shared.core.entity.SubmissionFile;
-import com.shared.core.entity.SubmissionState;
-import com.shared.core.model.SubmissionDetailView;
-import com.shared.core.model.SubmissionView;
-import com.shared.core.service.DocumentSubmissionService;
-import com.shared.core.service.SubmissionService;
 import com.asynchronous.api.SubmissionsApi;
 import com.asynchronous.api.dto.DocumentSubmissionState;
 import com.asynchronous.api.dto.Submission;
 import com.asynchronous.api.dto.SubmissionPage;
 import com.asynchronous.api.dto.SubmissionResponse;
 import com.asynchronous.app.mapper.SubmissionApiMapper;
+import com.shared.core.entity.SubmissionFile;
+import com.shared.core.entity.SubmissionState;
+import com.shared.core.exception.SubmissionFileReadException;
+import com.shared.core.model.SubmissionDetailView;
+import com.shared.core.model.SubmissionView;
+import com.shared.core.service.DocumentSubmissionService;
+import com.shared.core.service.SubmissionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -68,8 +69,8 @@ public class SubmissionController implements SubmissionsApi {
                                  .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
                                  .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(resource.contentLength()))
                                  .body(resource);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (IOException _) {
+            throw new SubmissionFileReadException(file.getName());
         }
     }
 

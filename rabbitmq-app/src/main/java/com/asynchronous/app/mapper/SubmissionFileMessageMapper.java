@@ -3,6 +3,7 @@ package com.asynchronous.app.mapper;
 import com.asynchronous.app.model.FileMessage;
 import com.shared.core.entity.DocumentSubmission;
 import com.shared.core.entity.SubmissionFile;
+import com.shared.core.exception.FileProcessingEexception;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,7 +35,7 @@ public interface SubmissionFileMessageMapper {
                               .content(file.getBytes())
                               .build();
         } catch (IOException e) {
-            throw new RuntimeException("Could not read file: " + file.getOriginalFilename(), e);
+            throw new FileProcessingEexception("Could not read file: " + file.getOriginalFilename(), e);
         }
     }
 

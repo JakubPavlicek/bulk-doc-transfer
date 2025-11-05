@@ -24,6 +24,8 @@ All tests files are divided into five categories (based on their size)
 
 ### Run tests and export metrics to Elasticsearch
 
+For additional information, see [k6 documentation](https://grafana.com/docs/k6/latest/results-output/real-time/elasticsearch/).
+
 1. Build the k6 version with Elasticsearch support:
 - This will create a `k6` binary in the current directory.
   ```shell

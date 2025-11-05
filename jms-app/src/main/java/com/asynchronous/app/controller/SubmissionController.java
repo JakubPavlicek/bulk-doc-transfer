@@ -8,6 +8,7 @@ import com.asynchronous.api.dto.SubmissionResponse;
 import com.asynchronous.app.mapper.SubmissionApiMapper;
 import com.shared.core.entity.SubmissionFile;
 import com.shared.core.entity.SubmissionState;
+import com.shared.core.exception.SubmissionFileReadException;
 import com.shared.core.model.SubmissionDetailView;
 import com.shared.core.model.SubmissionView;
 import com.shared.core.service.DocumentSubmissionService;
@@ -69,7 +70,7 @@ public class SubmissionController implements SubmissionsApi {
                                  .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(resource.contentLength()))
                                  .body(resource);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SubmissionFileReadException(file.getName());
         }
     }
 
