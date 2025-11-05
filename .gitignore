@@ -60,3 +60,5 @@ build/
 
 # Test files 
 k6/data
+k6/k6
+k6/k6.exe

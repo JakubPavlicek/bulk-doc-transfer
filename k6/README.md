@@ -22,22 +22,36 @@ All tests files are divided into five categories (based on their size)
 | 4         |  100KB - 1MB  |
 | 5         | 1 MB - 10 MB  |
 
-### Run tests with Prometheus metrics
+### Run tests and export metrics to Elasticsearch
 
-Start Docker containers with a k6 profile set, e.g.:
-```shell
-docker compose --profile synchronous --profile k6 up -d
-```
+1. Build the k6 version with Elasticsearch support:
+- This will create a `k6` binary in the current directory.
+  ```shell
+  # Install xk6
+  go install go.k6.io/xk6/cmd/xk6@latest
+    
+  # Build the k6 binary
+  xk6 build --with github.com/elastic/xk6-output-elasticsearch
+    
+  ... [INFO] Build environment ready
+  ... [INFO] Building k6
+  ... [INFO] Build complete: ./k6
+  ```
 
-Run tests with Prometheus metrics enabled:
-```shell
-K6_PROMETHEUS_RW_SERVER_URL=http://localhost:9090/api/v1/write \
-k6 run -o experimental-prometheus-rw <test-file>.js
-```
+2. Start Docker containers with a k6 profile set, e.g.:
+    ```shell
+    docker compose --profile synchronous --profile k6 up -d
+    ```
+
+3. Run tests and export metrics to Elasticsearch:
+    ```shell
+    K6_ELASTICSEARCH_URL=http://localhost:9200 \
+    ./k6 run simple-test.js -o output-elasticsearch
+    ```
 
 Access Grafana dashboard or Prometheus query console:
 
-| Service    | URL                              |
-|------------|----------------------------------|
-| Grafana    | http://localhost:3000/dashboards |
-| Prometheus | http://localhost:9090/query      |
+| Service       | URL                   |
+|---------------|-----------------------|
+| Kibana        | http://localhost:5601 |
+| Elasticsearch | http://localhost:9200 |

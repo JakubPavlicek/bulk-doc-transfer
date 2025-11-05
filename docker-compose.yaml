@@ -122,43 +122,41 @@ services:
 
   # ----- Observability -----
 
-  grafana:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.2.0
+    container_name: elasticsearch
     profiles:
-      - observability
-    container_name: grafana
-    image: grafana/grafana:latest
+      - k6
     environment:
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-    volumes:
-      - ./observability/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/default.yml
-      - ./observability/grafana-dashboard.yaml:/etc/grafana/provisioning/dashboards/default.yml
-      - ./observability/k6_dashboard.json:/etc/grafana/provisioning/dashboards/default.json
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
     ports:
-      - "3000:3000"
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
     networks:
-      - k6
+      - backend
 
-  prometheus:
+  kibana:
+    image: docker.elastic.co/kibana/kibana:9.2.0
+    container_name: kibana
     profiles:
-      - observability
-    container_name: prometheus
-    image: prom/prometheus:latest
-    command: [
-      --config.file=/etc/prometheus/prometheus.yml,
-      --web.enable-otlp-receiver,
-      --web.enable-remote-write-receiver
-    ]
-    volumes:
-      - ./observability/prometheus-config.yaml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
-    networks:
       - k6
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      XPACK_SECURITY_ENABLED: false
+    depends_on:
+      - elasticsearch
+    ports:
+      - "5601:5601"
+    networks:
+      - backend
 
 networks:
   backend:
-  k6:
 
 volumes:
   postgres_data:
+  es_data:

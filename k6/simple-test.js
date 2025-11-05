@@ -6,11 +6,11 @@ const smallestTxtFile = txtManifest.files.find((f) => f.category === "1");
 const txtFileData = open(`data/txt/${smallestTxtFile.name}`, "b");
 
 export const options = {
-  vus: 1,
+  vus: 10,
   iterations: 100,
 };
 
-const BASE_URL = "http://localhost:8010";
+const BASE_URL = "http://localhost:8020";
 
 export default function () {
   const data = {
