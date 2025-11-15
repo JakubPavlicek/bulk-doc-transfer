@@ -1,7 +1,7 @@
 import http from "k6/http";
-import { check } from "k6";
+import { check, sleep } from "k6";
 import { FormData } from "https://jslib.k6.io/formdata/0.0.2/index.js";
-
+// ...existing code...
 const testDir = "/data";
 const files = [
   "file1.jpg",
@@ -36,7 +36,7 @@ const SCENARIOS = {
   heavy: { fileCount: 5, vus: 10, duration: "30s", rate: 10 },
 };
 
-const ACTIVE_SCENARIO = __ENV.SCENARIO || "normal";
+const ACTIVE_SCENARIO = __ENV.SCENARIO || "light";
 const config = SCENARIOS[ACTIVE_SCENARIO];
 
 export const options = {
@@ -54,7 +54,9 @@ export const options = {
   },
 };
 
-const BASE_URL = "http://localhost:8010";
+const BASE_URL = "http://localhost:8020";
+const POLL_INTERVAL = 5;
+const MAX_POLL_ATTEMPTS = 10;
 
 export default function () {
   const iterationId = __ITER;
@@ -82,17 +84,43 @@ export default function () {
     },
   });
 
+  const submissionId = extractSubmissionId(response);
+  const pollResult = submissionId
+    ? pollSubmission(submissionId)
+    : { success: false, attempts: 0 };
+
   check(response, {
     "status is 202": (r) => r.status === 202,
-    "has submissionId": (r) => {
-      try {
-        const body = JSON.parse(r.body);
-        return body.submissionId !== undefined;
-      } catch {
-        return false;
-      }
-    },
+    "has submissionId": () => submissionId !== null,
   });
+
+  check(pollResult, {
+    "submission saved within timeout": (res) => res.success,
+  });
+}
+
+function extractSubmissionId(response) {
+  try {
+    const body = JSON.parse(response.body);
+    return body.submissionId ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function pollSubmission(submissionId) {
+  for (let attempts = 1; attempts <= MAX_POLL_ATTEMPTS; attempts++) {
+    const pollResponse = http.get(
+      `${BASE_URL}/api/v1/submissions/${submissionId}`
+    );
+    if (pollResponse.status === 200) {
+      return { success: true, attempts };
+    }
+    if (attempts < MAX_POLL_ATTEMPTS) {
+      sleep(POLL_INTERVAL);
+    }
+  }
+  return { success: false, attempts: MAX_POLL_ATTEMPTS };
 }
 
 function selectFiles(count, iteration) {
