@@ -42,7 +42,7 @@ For additional information, see [k6 documentation](https://grafana.com/docs/k6/l
 
 2. Run tests and export metrics to Elasticsearch:
     ```shell
-    K6_ELASTICSEARCH_URL=http://localhost:9200 \
+    K6_ELASTICSEARCH_URL=http://elasticsearch-sare:9200 \
     ./k6 run simple-test.js -o output-elasticsearch
     ```
 

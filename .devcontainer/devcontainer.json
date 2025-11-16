@@ -1,0 +1,13 @@
+{
+  "name": "k6 testing environment",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspace",
+  "postCreateCommand": "go install go.k6.io/xk6/cmd/xk6@latest && cd /workspace/k6 && /go/bin/xk6 build --with github.com/elastic/xk6-output-elasticsearch",
+  "customizations": {
+    "jetbrains": {
+      "backend": "GoLand"
+    }
+  },
+  "remoteUser": "root"
+}
