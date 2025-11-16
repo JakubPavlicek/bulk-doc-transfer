@@ -81,7 +81,7 @@ management:
   elastic:
     metrics:
       export:
-        host: http://elasticsearch:9200
+        host: http://elasticsearch-sare:9200
         index: jms-app-metrics
         step: 15s
   simple:
