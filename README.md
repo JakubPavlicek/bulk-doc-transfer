@@ -89,11 +89,9 @@ The backend applications are implemented with the following technologies:
 ```shell
 # Build Synchronous and RabbitMQ App images (from the root directory)
 mvn -T 1C -DskipTests package spring-boot:build-image
-
-# Build JMS App image (from the jms-app directory)
-cd jms-app
-docker build -t jms-app .
 ```
+
+- JMS App image is built automatically by Docker Compose.
 
 #### Run Applications
 
