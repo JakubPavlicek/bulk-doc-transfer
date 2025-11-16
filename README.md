@@ -74,29 +74,42 @@ The backend applications are implemented with the following technologies:
 - **rabbitmq-app**: Spring Boot 4.0.0, Java 25, and RabbitMQ 4.1.4.
 - **synchronous-app**: Spring Boot 4.0.0 and Java 25.
 
+### Architecture
+
+<img src="architecture.png" alt="Architecture Diagram" width="2000">
+
 ### Database
 
 <img src="database.png" alt="Database Schema" width="2000">
 
 ### Docker
 
-Every command is executed from the root directory of the project.
-
 #### Build Images
 
-Build Synchronous and RabbitMQ App images: `mvn -T 1C -DskipTests package spring-boot:build-image`
+```shell
+# Build Synchronous and RabbitMQ App images (from the root directory)
+mvn -T 1C -DskipTests package spring-boot:build-image
 
-JMS App image is built automatically using Docker Compose.
+# Build JMS App image (from the jms-app directory)
+cd jms-app
+docker build -t jms-app .
+```
 
 #### Run Applications
 
-Synchronous App: `docker compose --profile synchronous up -d`
+```shell
+# Run all applications in Docker Compose
+docker compose up -d
+```
 
-RabbitMQ App: `docker compose --profile rabbit up -d`
+or selectively run specific applications:
 
-JMS App: `docker compose --profile jms up -d --build`
+```shell
+# Run only the Synchronous App with PostgreSQL
+docker compose up -d synchronous-app postgres
+```
 
-### Applications
+### Access API Documentation
 
 - **Synchronous App**: `http://localhost:8010/swagger-ui.html`
 - **RabbitMQ App**: `http://localhost:8020/swagger-ui.html`
