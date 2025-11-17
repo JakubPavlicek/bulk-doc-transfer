@@ -61,36 +61,6 @@ spring:
     virtual:
       enabled: true
 
-management:
-  metrics:
-    enable:
-      jvm: true
-      process: true
-      system: true
-      logback: true
-      jvm.gc: true
-      jvm.memory: true
-      jvm.threads: true
-      jvm.bufferpool: true
-      process.cpu: true
-      process.files: true
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics
-  elastic:
-    metrics:
-      export:
-        host: http://elasticsearch-sare:9200
-        index: jms-app-metrics
-        step: 15s
-  simple:
-    metrics:
-      export:
-        enabled: true
-        step: 15s
-        mode: step
-
 springdoc:
   api-docs:
     enabled: false

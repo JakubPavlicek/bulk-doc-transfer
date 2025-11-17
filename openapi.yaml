@@ -263,6 +263,7 @@ components:
         - description
         - referenceNumber
         - createdAt
+        - savedAt
         - state
         - checkResult
         - files
@@ -297,6 +298,11 @@ components:
           format: date-time
           description: Date and time of the submission creation.
           example: "2025-01-01T00:00:00Z"
+        savedAt:
+          type: string
+          format: date-time
+          description: Date and time when the submission was saved to the database.
+          example: "2025-01-01T00:01:00Z"
         state:
           $ref: '#/components/schemas/DocumentSubmissionState'
         checkResult:

@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS "document_submissions" (
   "description" text,
   "reference_number" varchar(255) UNIQUE NOT NULL,
   "created_at" timestamp,
+  "saved_at" timestamp,
   "state" varchar(13) check (state in ('ACCEPTED', 'PROCESSED', 'SAVED', 'RESPONSE_SENT')) NOT NULL,
   "check_result" varchar(20) check (check_result in ('OK', 'ELECTRONIC_SIGNATURE', 'MALWARE')),
   "total_files" int

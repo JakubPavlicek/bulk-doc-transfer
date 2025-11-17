@@ -12,11 +12,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 @Service
 public class JmsConsumer {
 
@@ -42,6 +45,7 @@ public class JmsConsumer {
 
         // Finally, update the submission state
         documentSubmissionService.updateSubmissionState(submission, SubmissionState.RESPONSE_SENT);
+        submission.setSavedAt(Instant.now());
 
         log.info("Submission with ID: {} processed successfully", submissionId);
     }

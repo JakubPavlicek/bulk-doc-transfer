@@ -11,6 +11,7 @@ public interface SubmissionView {
     String getDescription();
     String getReferenceNumber();
     Instant getCreatedAt();
+    Instant getSavedAt();
     String getState();
     String getCheckResult();
     List<FileView> getFiles();

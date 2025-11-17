@@ -102,6 +102,12 @@ public class DocumentSubmission {
     private Instant createdAt;
 
     @Column(
+        name = "saved_at",
+        nullable = true
+    )
+    private Instant savedAt;
+
+    @Column(
         name = "state",
         length = 13
     )

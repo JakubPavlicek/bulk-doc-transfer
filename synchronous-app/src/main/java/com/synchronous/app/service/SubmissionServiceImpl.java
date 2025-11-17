@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
 import java.util.List;
 
 @Slf4j
@@ -41,6 +42,7 @@ public class SubmissionServiceImpl implements SubmissionService {
 
         // Finally, send a response
         documentSubmissionService.updateSubmissionState(submission, SubmissionState.RESPONSE_SENT);
+        submission.setSavedAt(Instant.now());
 
         log.info("Submission created successfully");
 
