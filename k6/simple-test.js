@@ -1,9 +1,7 @@
 import http from "k6/http";
 import { check } from "k6";
 
-const txtManifest = JSON.parse(open("data/txt/manifest.json"));
-const smallestTxtFile = txtManifest.files.find((f) => f.category === "1");
-const txtFileData = open(`data/txt/${smallestTxtFile.name}`, "b");
+const txtFileData = open("data/file1.jpg", "b");
 
 export const options = {
   vus: 10,
@@ -17,12 +15,12 @@ export default function () {
     email: "jpvlck@students.zcu.cz",
     subject: "Single file test",
     description: "Testing with just one file.",
-    files: http.file(txtFileData, smallestTxtFile.name),
+    files: http.file(txtFileData, "file1.jpg"),
   };
 
   console.log("data prepares", data);
 
-  console.log(`Uploading single file: ${smallestTxtFile.name}`);
+  console.log(`Uploading single file: file1.jpg`);
 
   const response = http.post(`${BASE_URL}/api/v1/submissions`, data);
 

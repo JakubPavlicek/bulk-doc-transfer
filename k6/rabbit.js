@@ -2,7 +2,7 @@ import http from "k6/http";
 import { check, sleep } from "k6";
 import { FormData } from "https://jslib.k6.io/formdata/0.0.2/index.js";
 // ...existing code...
-const testDir = "/data";
+const testDir = "./data";
 const files = [
   "file1.jpg",
   "file2.pdf",
@@ -44,17 +44,17 @@ export const options = {
     [ACTIVE_SCENARIO]: {
       executor: "shared-iterations",
       vus: config.vus,
-      iterations: 50,
+      iterations: 10,
       maxDuration: "10m",
     },
   },
   thresholds: {
     http_req_duration: ["p(95)<5000"],
     http_req_failed: ["rate<0.1"],
-  },
+  }
 };
 
-const BASE_URL = "http://localhost:8020";
+const BASE_URL = "http://rabbitmq-app:8020";
 const POLL_INTERVAL = 5;
 const MAX_POLL_ATTEMPTS = 10;
 
@@ -81,6 +81,7 @@ export default function () {
     tags: {
       scenario: ACTIVE_SCENARIO,
       fileCount: selectedFiles.length.toString(),
+      app: "rabbitmq",
     },
   });
 
@@ -113,10 +114,12 @@ function pollSubmission(submissionId) {
     const pollResponse = http.get(
       `${BASE_URL}/api/v1/submissions/${submissionId}`
     );
+    console.log(`Status odpovědi při dotazování na stav: ${pollResponse.status} - submissionId: ${submissionId}`);
     if (pollResponse.status === 200) {
       return { success: true, attempts };
     }
     if (attempts < MAX_POLL_ATTEMPTS) {
+      console.log("spinkam 5s pro další pokus:", submissionId);
       sleep(POLL_INTERVAL);
     }
   }
