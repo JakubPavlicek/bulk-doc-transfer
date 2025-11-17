@@ -1,6 +1,10 @@
 import http from "k6/http";
 import { check } from "k6";
 import { FormData } from "https://jslib.k6.io/formdata/0.0.2/index.js";
+import { Trend } from 'k6/metrics';
+
+const totalTimeTrend = new Trend('totalTime');
+
 
 const testDir = "./data";
 const files = [
@@ -44,7 +48,7 @@ export const options = {
     [ACTIVE_SCENARIO]: {
       executor: "shared-iterations",
       vus: config.vus,
-      iterations: 50,
+      iterations: 20,
       maxDuration: "10m",
     },
   },
@@ -55,10 +59,11 @@ export const options = {
 };
 
 const BASE_URL = "http://synchronous-app:8010";
-
+const POLL_INTERVAL = 5;
+const MAX_POLL_ATTEMPTS = 10;
 export default function () {
   const iterationId = __ITER;
-  const selectedFiles = selectFiles(config.fileCount, iterationId);
+  const {selectedFiles, fileSize} = selectFiles(config.fileCount, iterationId);
 
   const fd = new FormData();
   fd.append("email", "jpvlck@students.zcu.cz");
@@ -72,6 +77,7 @@ export default function () {
     fd.append("files", http.file(file.content, file.name, file.type));
   });
 
+  const startTime = new Date();
   const response = http.post(`${BASE_URL}/api/v1/submissions`, fd.body(), {
     headers: {
       "Content-Type": "multipart/form-data; boundary=" + fd.boundary,
@@ -79,9 +85,15 @@ export default function () {
     tags: {
       scenario: ACTIVE_SCENARIO,
       fileCount: selectedFiles.length.toString(),
+      fileSize: fileSize,
       app: "synchronous",
     },
   });
+  
+  const submissionId = extractSubmissionId(response);
+  const pollResult = submissionId
+    ? pollSubmission(submissionId, startTime, totalTimeTrend)
+    : { success: false, attempts: 0 };
 
   check(response, {
     "status is 202": (r) => r.status === 202,
@@ -94,7 +106,43 @@ export default function () {
       }
     },
   });
+
+  check(pollResult, {
+    "submission saved within timeout": (res) => res.success,
+  });
 }
+
+function pollSubmission(submissionId, startTime, totalTimeTrend) {
+  for (let attempts = 1; attempts <= MAX_POLL_ATTEMPTS; attempts++) {
+    const pollResponse = http.get(
+      `${BASE_URL}/api/v1/submissions/${submissionId}`
+    );
+    const parseredBody = JSON.parse(pollResponse.body);
+    console.log(`Status odpovědi při dotazování na stav: ${pollResponse.status} - submissionId: ${submissionId}`);
+    if (pollResponse.status === 200 && parseredBody.savedAt !== null) {
+      console.log(`Successfully retrieved submission: ${submissionId} in ${attempts} attempts - ${parseredBody.savedAt} `);
+      console.log(`Start time: ${startTime} - Saved at: ${parseredBody.savedAt}`);
+      const savedAtDate = new Date(parseredBody.savedAt);
+      totalTimeTrend.add(savedAtDate.getTime() - startTime.getTime());
+      console.log(`Total time for submission ${submissionId}: ${savedAtDate.getTime() - startTime.getTime()} ms`);
+      return { success: true, attempts };
+    }
+    if (attempts < MAX_POLL_ATTEMPTS) {
+      sleep(POLL_INTERVAL);
+    }
+  }
+  return { success: false, attempts: MAX_POLL_ATTEMPTS };
+}
+
+function extractSubmissionId(response) {
+  try {
+    const body = JSON.parse(response.body);
+    return body.submissionId ?? null;
+  } catch {
+    return null;
+  }
+}
+
 
 function selectFiles(count, iteration) {
   const maxFiles = Math.min(count, 5);
@@ -103,5 +151,7 @@ function selectFiles(count, iteration) {
     const index = (iteration * maxFiles + i) % fileContents.length;
     selected.push(fileContents[index]);
   }
-  return selected;
+  const fileSize = selected.reduce((sum, f) => sum + f.content.byteLength, 0);
+
+  return {selectedFiles: selected, fileSize};
 }

@@ -1,7 +1,14 @@
 import http from "k6/http";
 import { check, sleep } from "k6";
 import { FormData } from "https://jslib.k6.io/formdata/0.0.2/index.js";
-// ...existing code...
+import { Trend } from 'k6/metrics';
+
+const APP = "wildfly";
+// const APP = "rabbitmq"
+
+const totalTimeTrend = new Trend('totalTime');
+
+
 const testDir = "./data";
 const files = [
   "file1.jpg",
@@ -44,23 +51,23 @@ export const options = {
     [ACTIVE_SCENARIO]: {
       executor: "shared-iterations",
       vus: config.vus,
-      iterations: 10,
+      iterations: 20,
       maxDuration: "10m",
     },
   },
   thresholds: {
     http_req_duration: ["p(95)<5000"],
     http_req_failed: ["rate<0.1"],
-  }
+  },
 };
 
-const BASE_URL = "http://rabbitmq-app:8020";
+const BASE_URL = APP === "wildfly" ? "http://jms-app:8080" : "http://rabbitmq-app:8020";
 const POLL_INTERVAL = 5;
 const MAX_POLL_ATTEMPTS = 10;
 
 export default function () {
   const iterationId = __ITER;
-  const selectedFiles = selectFiles(config.fileCount, iterationId);
+  const {selectedFiles, fileSize} = selectFiles(config.fileCount, iterationId);
 
   const fd = new FormData();
   fd.append("email", "jpvlck@students.zcu.cz");
@@ -74,6 +81,7 @@ export default function () {
     fd.append("files", http.file(file.content, file.name, file.type));
   });
 
+  const startTime = new Date();
   const response = http.post(`${BASE_URL}/api/v1/submissions`, fd.body(), {
     headers: {
       "Content-Type": "multipart/form-data; boundary=" + fd.boundary,
@@ -81,13 +89,16 @@ export default function () {
     tags: {
       scenario: ACTIVE_SCENARIO,
       fileCount: selectedFiles.length.toString(),
-      app: "rabbitmq",
+      fileSize: fileSize,
+      app: APP,
     },
   });
 
   const submissionId = extractSubmissionId(response);
+
+  sleep(3); // Short sleep before polling - electronic signature, malware scan, etc.
   const pollResult = submissionId
-    ? pollSubmission(submissionId)
+    ? pollSubmission(submissionId, startTime, totalTimeTrend)
     : { success: false, attempts: 0 };
 
   check(response, {
@@ -109,17 +120,22 @@ function extractSubmissionId(response) {
   }
 }
 
-function pollSubmission(submissionId) {
+function pollSubmission(submissionId, startTime, totalTimeTrend) {
   for (let attempts = 1; attempts <= MAX_POLL_ATTEMPTS; attempts++) {
     const pollResponse = http.get(
       `${BASE_URL}/api/v1/submissions/${submissionId}`
     );
+    const parseredBody = JSON.parse(pollResponse.body);
     console.log(`Status odpovědi při dotazování na stav: ${pollResponse.status} - submissionId: ${submissionId}`);
-    if (pollResponse.status === 200) {
+    if (pollResponse.status === 200 && parseredBody.savedAt !== null) {
+      console.log(`Successfully retrieved submission: ${submissionId} in ${attempts} attempts - ${parseredBody.savedAt} `);
+      console.log(`Start time: ${startTime} - Saved at: ${parseredBody.savedAt}`);
+      const savedAtDate = new Date(parseredBody.savedAt);
+      totalTimeTrend.add(savedAtDate.getTime() - startTime.getTime());
+      console.log(`Total time for submission ${submissionId}: ${savedAtDate.getTime() - startTime.getTime()} ms`);
       return { success: true, attempts };
     }
     if (attempts < MAX_POLL_ATTEMPTS) {
-      console.log("spinkam 5s pro další pokus:", submissionId);
       sleep(POLL_INTERVAL);
     }
   }
@@ -133,5 +149,7 @@ function selectFiles(count, iteration) {
     const index = (iteration * maxFiles + i) % fileContents.length;
     selected.push(fileContents[index]);
   }
-  return selected;
+  const fileSize = selected.reduce((sum, f) => sum + f.content.byteLength, 0);
+
+  return {selectedFiles: selected, fileSize};
 }
