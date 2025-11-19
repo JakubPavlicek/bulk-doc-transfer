@@ -1,7 +1,8 @@
 import http from "k6/http";
-import { check } from "k6";
+import { check, sleep } from "k6";
 import { FormData } from "https://jslib.k6.io/formdata/0.0.2/index.js";
 import { Trend } from 'k6/metrics';
+import exec from 'k6/execution';
 
 const totalTimeTrend = new Trend('totalTime');
 
@@ -34,40 +35,63 @@ function getContentType(filename) {
   return types[ext] || "application/octet-stream";
 }
 
-const SCENARIOS = {
-  light: { fileCount: 1, vus: 1, duration: "30s", rate: 1 },
-  normal: { fileCount: 3, vus: 5, duration: "30s", rate: 5 },
-  heavy: { fileCount: 5, vus: 10, duration: "30s", rate: 10 },
+const SCENARIO_CONFIGS = {
+  "rate-10-5files": { fileCount: 5, rate: 1, duration: "30s", durationSeconds: 30, preAllocatedVUs: 40, maxVUs: 80 },
 };
+/* const SCENARIO_CONFIGS = {
+  "rate-1-file": { fileCount: 1, rate: 1, duration: "30s", durationSeconds: 30, preAllocatedVUs: 10, maxVUs: 20 },
+  "rate-2-file": { fileCount: 1, rate: 2, duration: "30s", durationSeconds: 30, preAllocatedVUs: 20, maxVUs: 40 },
+  "rate-5-3files": { fileCount: 3, rate: 5, duration: "30s", durationSeconds: 30, preAllocatedVUs: 30, maxVUs: 60 },
+  "rate-10-5files": { fileCount: 5, rate: 10, duration: "30s", durationSeconds: 30, preAllocatedVUs: 40, maxVUs: 80 },
+}; */
 
-const ACTIVE_SCENARIO = __ENV.SCENARIO || "light";
-const config = SCENARIOS[ACTIVE_SCENARIO];
+const SCENARIO_GAP_SECONDS = 5;
 
 export const options = {
-  scenarios: {
-    [ACTIVE_SCENARIO]: {
-      executor: "shared-iterations",
-      vus: config.vus,
-      iterations: 20,
-      maxDuration: "10m",
-    },
-  },
+  scenarios: buildSequentialScenarios(),
   thresholds: {
     http_req_duration: ["p(95)<5000"],
     http_req_failed: ["rate<0.1"],
   },
 };
 
+function buildSequentialScenarios() {
+  const scenarios = {};
+  let offsetSeconds = 0;
+  for (const name of Object.keys(SCENARIO_CONFIGS)) {
+    const scenario = SCENARIO_CONFIGS[name];
+    scenarios[name] = {
+      executor: "constant-arrival-rate",
+      rate: scenario.rate,
+      timeUnit: "1s",
+      duration: scenario.duration,
+      startTime: `${offsetSeconds}s`,
+      preAllocatedVUs: scenario.preAllocatedVUs ?? scenario.rate * 2,
+      maxVUs: scenario.maxVUs ?? scenario.preAllocatedVUs ?? scenario.rate * 4,
+      tags: {
+        scenarioType: name,
+      },
+      gracefulStop: "100s",
+    };
+    offsetSeconds += scenario.durationSeconds + SCENARIO_GAP_SECONDS;
+  }
+  return scenarios;
+}
+
 const BASE_URL = "http://synchronous-app:8010";
 const POLL_INTERVAL = 5;
 const MAX_POLL_ATTEMPTS = 10;
+
 export default function () {
   const iterationId = __ITER;
-  const {selectedFiles, fileSize} = selectFiles(config.fileCount, iterationId);
+  const scenarioName = exec.scenario.name;
+  const scenarioConfig = SCENARIO_CONFIGS[scenarioName];
+  const {selectedFiles, fileSize} = selectFiles(scenarioConfig.fileCount, iterationId);
+  console.log(`Iteration ${iterationId} - Scenario: ${scenarioName} - Selected ${selectedFiles.length} file(s) with total size ${fileSize} bytes`);
 
   const fd = new FormData();
   fd.append("email", "jpvlck@students.zcu.cz");
-  fd.append("subject", `Test ${ACTIVE_SCENARIO} - Iteration ${iterationId}`);
+  fd.append("subject", `Test ${scenarioName} - Iteration ${iterationId}`);
   fd.append(
     "description",
     `Benchmarking ${selectedFiles.length} file(s), iteration ${iterationId}`
@@ -77,18 +101,20 @@ export default function () {
     fd.append("files", http.file(file.content, file.name, file.type));
   });
 
+  console.log(`Sending POST request with ${selectedFiles.length} file(s) totaling ${fileSize} bytes`);
   const startTime = new Date();
   const response = http.post(`${BASE_URL}/api/v1/submissions`, fd.body(), {
     headers: {
       "Content-Type": "multipart/form-data; boundary=" + fd.boundary,
     },
     tags: {
-      scenario: ACTIVE_SCENARIO,
+      scenario: scenarioName,
       fileCount: selectedFiles.length.toString(),
       fileSize: fileSize,
       app: "synchronous",
     },
   });
+  console.log(`Received response with status ${response.status} for submission`);
   
   const submissionId = extractSubmissionId(response);
   const pollResult = submissionId
