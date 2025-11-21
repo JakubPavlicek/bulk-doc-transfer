@@ -39,10 +39,22 @@ function getContentType(filename) {
 }
 
 const SCENARIO_CONFIGS = {
-  "rate-1-file": { fileCount: 1, rate: 1, duration: "30s", durationSeconds: 30, preAllocatedVUs: 2, maxVUs: 5 },
-  "rate-2-file": { fileCount: 1, rate: 2, duration: "30s", durationSeconds: 30, preAllocatedVUs: 4, maxVUs: 8 },
-  "rate-5-3files": { fileCount: 3, rate: 5, duration: "30s", durationSeconds: 30, preAllocatedVUs: 8, maxVUs: 16 },
-  "rate-10-5files": { fileCount: 5, rate: 10, duration: "30s", durationSeconds: 30, preAllocatedVUs: 12, maxVUs: 24 },
+  // Nízký rate s 1 souborem
+  "low-1file": { fileCount: 1, rate: 2, timeUnit: "10s", duration: "60s" },  // 0.2 req/s
+  // Střední rate s 1 souborem
+  "mid-1file": { fileCount: 1, rate: 1, timeUnit: "1s", duration: "60s" },   // 1 req/s
+  // Vyšší rate s 1 souborem
+  "high-1file": { fileCount: 1, rate: 5, timeUnit: "1s", duration: "60s" },  // 5 req/s
+  
+  // Nízký rate s 3 soubory
+  "low-3files": { fileCount: 3, rate: 2, timeUnit: "10s", duration: "60s" }, // 0.2 req/s
+  // Střední rate s 3 soubory
+  "mid-3files": { fileCount: 3, rate: 1, timeUnit: "1s", duration: "60s" },  // 1 req/s
+  
+  // Nízký rate s 5 soubory
+  "low-5files": { fileCount: 5, rate: 2, timeUnit: "10s", duration: "60s" }, // 0.2 req/s
+  // Střední rate s 5 soubory  
+  "mid-5files": { fileCount: 5, rate: 1, timeUnit: "1s", duration: "60s" },  // 1 req/s
 };
 
 const SCENARIO_GAP_SECONDS = 5;
@@ -60,19 +72,21 @@ function buildSequentialScenarios() {
   let offsetSeconds = 0;
   for (const name of Object.keys(SCENARIO_CONFIGS)) {
     const scenario = SCENARIO_CONFIGS[name];
+    const durationSeconds = parseInt(scenario.duration);
     scenarios[name] = {
       executor: "constant-arrival-rate",
       rate: scenario.rate,
-      timeUnit: "1s",
+      timeUnit: scenario.timeUnit || "1s",
       duration: scenario.duration,
+      preAllocatedVUs: 10,
+      maxVUs: 50,
       startTime: `${offsetSeconds}s`,
-      preAllocatedVUs: scenario.preAllocatedVUs ?? scenario.rate * 2,
-      maxVUs: scenario.maxVUs ?? scenario.preAllocatedVUs ?? scenario.rate * 4,
       tags: {
         scenarioType: name,
       },
+      gracefulStop: "100s",
     };
-    offsetSeconds += scenario.durationSeconds + SCENARIO_GAP_SECONDS;
+    offsetSeconds += durationSeconds + SCENARIO_GAP_SECONDS;
   }
   return scenarios;
 }

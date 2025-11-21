@@ -1,11 +1,10 @@
 import http from "k6/http";
 import { check, sleep } from "k6";
 import { FormData } from "https://jslib.k6.io/formdata/0.0.2/index.js";
-import { Trend } from 'k6/metrics';
-import exec from 'k6/execution';
+import { Trend } from "k6/metrics";
+import exec from "k6/execution";
 
-const totalTimeTrend = new Trend('totalTime');
-
+const totalTimeTrend = new Trend("totalTime");
 
 const testDir = "./data";
 const files = [
@@ -36,14 +35,25 @@ function getContentType(filename) {
 }
 
 const SCENARIO_CONFIGS = {
-  "rate-10-5files": { fileCount: 5, rate: 1, duration: "30s", durationSeconds: 30, preAllocatedVUs: 40, maxVUs: 80 },
+  /*// Nízký rate s 1 souborem
+  "low-1file": { fileCount: 1, rate: 2, timeUnit: "10s", duration: "60s" }, // 0.2 req/s
+  // Střední rate s 1 souborem
+  "mid-1file": { fileCount: 1, rate: 1, timeUnit: "1s", duration: "60s" }, // 1 req/s
+  // Vyšší rate s 1 souborem
+  "high-1file": { fileCount: 1, rate: 5, timeUnit: "1s", duration: "60s" }, // 5 req/s
+
+  // Nízký rate s 3 soubory
+  "low-3files": { fileCount: 3, rate: 2, timeUnit: "10s", duration: "60s" }, // 0.2 req/s
+  // Střední rate s 3 soubory
+  "mid-3files": { fileCount: 3, rate: 1, timeUnit: "1s", duration: "60s" }, // 1 req/s
+
+  // Nízký rate s 5 soubory
+  "low-5files": { fileCount: 5, rate: 2, timeUnit: "10s", duration: "60s" }, // 0.2 req/s
+  // Střední rate s 5 soubory
+  "mid-5files": { fileCount: 5, rate: 1, timeUnit: "1s", duration: "60s" }, // 1 req/s
+  // Vyšší rate s 5 soubory*/
+  "high-5files": { fileCount: 5, rate: 3, timeUnit: "1s", duration: "60s" }, // 5 req/s
 };
-/* const SCENARIO_CONFIGS = {
-  "rate-1-file": { fileCount: 1, rate: 1, duration: "30s", durationSeconds: 30, preAllocatedVUs: 10, maxVUs: 20 },
-  "rate-2-file": { fileCount: 1, rate: 2, duration: "30s", durationSeconds: 30, preAllocatedVUs: 20, maxVUs: 40 },
-  "rate-5-3files": { fileCount: 3, rate: 5, duration: "30s", durationSeconds: 30, preAllocatedVUs: 30, maxVUs: 60 },
-  "rate-10-5files": { fileCount: 5, rate: 10, duration: "30s", durationSeconds: 30, preAllocatedVUs: 40, maxVUs: 80 },
-}; */
 
 const SCENARIO_GAP_SECONDS = 5;
 
@@ -60,20 +70,21 @@ function buildSequentialScenarios() {
   let offsetSeconds = 0;
   for (const name of Object.keys(SCENARIO_CONFIGS)) {
     const scenario = SCENARIO_CONFIGS[name];
+    const durationSeconds = parseInt(scenario.duration);
     scenarios[name] = {
       executor: "constant-arrival-rate",
       rate: scenario.rate,
-      timeUnit: "1s",
+      timeUnit: scenario.timeUnit || "1s",
       duration: scenario.duration,
+      preAllocatedVUs: 10,
+      maxVUs: 50,
       startTime: `${offsetSeconds}s`,
-      preAllocatedVUs: scenario.preAllocatedVUs ?? scenario.rate * 2,
-      maxVUs: scenario.maxVUs ?? scenario.preAllocatedVUs ?? scenario.rate * 4,
       tags: {
         scenarioType: name,
       },
       gracefulStop: "100s",
     };
-    offsetSeconds += scenario.durationSeconds + SCENARIO_GAP_SECONDS;
+    offsetSeconds += durationSeconds + SCENARIO_GAP_SECONDS;
   }
   return scenarios;
 }
@@ -86,8 +97,13 @@ export default function () {
   const iterationId = __ITER;
   const scenarioName = exec.scenario.name;
   const scenarioConfig = SCENARIO_CONFIGS[scenarioName];
-  const {selectedFiles, fileSize} = selectFiles(scenarioConfig.fileCount, iterationId);
-  console.log(`Iteration ${iterationId} - Scenario: ${scenarioName} - Selected ${selectedFiles.length} file(s) with total size ${fileSize} bytes`);
+  const { selectedFiles, fileSize } = selectFiles(
+    scenarioConfig.fileCount,
+    iterationId
+  );
+  console.log(
+    `Iteration ${iterationId} - Scenario: ${scenarioName} - Selected ${selectedFiles.length} file(s) with total size ${fileSize} bytes`
+  );
 
   const fd = new FormData();
   fd.append("email", "jpvlck@students.zcu.cz");
@@ -101,7 +117,9 @@ export default function () {
     fd.append("files", http.file(file.content, file.name, file.type));
   });
 
-  console.log(`Sending POST request with ${selectedFiles.length} file(s) totaling ${fileSize} bytes`);
+  console.log(
+    `Sending POST request with ${selectedFiles.length} file(s) totaling ${fileSize} bytes`
+  );
   const startTime = new Date();
   const response = http.post(`${BASE_URL}/api/v1/submissions`, fd.body(), {
     headers: {
@@ -114,8 +132,10 @@ export default function () {
       app: "synchronous",
     },
   });
-  console.log(`Received response with status ${response.status} for submission`);
-  
+  console.log(
+    `Received response with status ${response.status} for submission`
+  );
+
   const submissionId = extractSubmissionId(response);
   const pollResult = submissionId
     ? pollSubmission(submissionId, startTime, totalTimeTrend)
@@ -144,13 +164,23 @@ function pollSubmission(submissionId, startTime, totalTimeTrend) {
       `${BASE_URL}/api/v1/submissions/${submissionId}`
     );
     const parseredBody = JSON.parse(pollResponse.body);
-    console.log(`Status odpovědi při dotazování na stav: ${pollResponse.status} - submissionId: ${submissionId}`);
+    console.log(
+      `Status odpovědi při dotazování na stav: ${pollResponse.status} - submissionId: ${submissionId}`
+    );
     if (pollResponse.status === 200 && parseredBody.savedAt !== null) {
-      console.log(`Successfully retrieved submission: ${submissionId} in ${attempts} attempts - ${parseredBody.savedAt} `);
-      console.log(`Start time: ${startTime} - Saved at: ${parseredBody.savedAt}`);
+      console.log(
+        `Successfully retrieved submission: ${submissionId} in ${attempts} attempts - ${parseredBody.savedAt} `
+      );
+      console.log(
+        `Start time: ${startTime} - Saved at: ${parseredBody.savedAt}`
+      );
       const savedAtDate = new Date(parseredBody.savedAt);
       totalTimeTrend.add(savedAtDate.getTime() - startTime.getTime());
-      console.log(`Total time for submission ${submissionId}: ${savedAtDate.getTime() - startTime.getTime()} ms`);
+      console.log(
+        `Total time for submission ${submissionId}: ${
+          savedAtDate.getTime() - startTime.getTime()
+        } ms`
+      );
       return { success: true, attempts };
     }
     if (attempts < MAX_POLL_ATTEMPTS) {
@@ -169,7 +199,6 @@ function extractSubmissionId(response) {
   }
 }
 
-
 function selectFiles(count, iteration) {
   const maxFiles = Math.min(count, 5);
   const selected = [];
@@ -179,5 +208,5 @@ function selectFiles(count, iteration) {
   }
   const fileSize = selected.reduce((sum, f) => sum + f.content.byteLength, 0);
 
-  return {selectedFiles: selected, fileSize};
+  return { selectedFiles: selected, fileSize };
 }
