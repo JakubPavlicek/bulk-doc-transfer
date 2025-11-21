@@ -1,14 +1,14 @@
 import http from "k6/http";
 import { check, sleep } from "k6";
 import { FormData } from "https://jslib.k6.io/formdata/0.0.2/index.js";
-import { Trend } from 'k6/metrics';
-import exec from 'k6/execution';
+import { Trend } from "k6/metrics";
+import exec from "k6/execution";
+import { SharedArray } from "k6/data";
 
 const APP = "wildfly";
 // const APP = "rabbitmq"
 
-const totalTimeTrend = new Trend('totalTime');
-
+const totalTimeTrend = new Trend("totalTime");
 
 const testDir = "./data";
 const files = [
@@ -20,11 +20,13 @@ const files = [
   "file6.xml",
 ];
 
-const fileContents = files.map((filename) => ({
-  name: filename,
-  content: open(`${testDir}/${filename}`, "b"),
-  type: getContentType(filename),
-}));
+const fileContents = new SharedArray("fileContents", function () {
+  return files.map((filename) => ({
+    name: filename,
+    content: open(`${testDir}/${filename}`),
+    type: getContentType(filename),
+  }));
+});
 
 function getContentType(filename) {
   const ext = filename.split(".").pop().toLowerCase();
@@ -40,21 +42,21 @@ function getContentType(filename) {
 
 const SCENARIO_CONFIGS = {
   // Nízký rate s 1 souborem
-  "low-1file": { fileCount: 1, rate: 2, timeUnit: "10s", duration: "60s" },  // 0.2 req/s
+  "low-1file": { fileCount: 1, rate: 2, timeUnit: "10s", duration: "60s" }, // 0.2 req/s
   // Střední rate s 1 souborem
-  "mid-1file": { fileCount: 1, rate: 1, timeUnit: "1s", duration: "60s" },   // 1 req/s
+  "mid-1file": { fileCount: 1, rate: 1, timeUnit: "1s", duration: "60s" }, // 1 req/s
   // Vyšší rate s 1 souborem
-  "high-1file": { fileCount: 1, rate: 5, timeUnit: "1s", duration: "60s" },  // 5 req/s
-  
+  "high-1file": { fileCount: 1, rate: 5, timeUnit: "1s", duration: "60s" }, // 5 req/s
+
   // Nízký rate s 3 soubory
   "low-3files": { fileCount: 3, rate: 2, timeUnit: "10s", duration: "60s" }, // 0.2 req/s
   // Střední rate s 3 soubory
-  "mid-3files": { fileCount: 3, rate: 1, timeUnit: "1s", duration: "60s" },  // 1 req/s
-  
+  "mid-3files": { fileCount: 3, rate: 1, timeUnit: "1s", duration: "60s" }, // 1 req/s
+
   // Nízký rate s 5 soubory
   "low-5files": { fileCount: 5, rate: 2, timeUnit: "10s", duration: "60s" }, // 0.2 req/s
-  // Střední rate s 5 soubory  
-  "mid-5files": { fileCount: 5, rate: 1, timeUnit: "1s", duration: "60s" },  // 1 req/s
+  // Střední rate s 5 soubory
+  "mid-5files": { fileCount: 5, rate: 1, timeUnit: "1s", duration: "60s" }, // 1 req/s
 };
 
 const SCENARIO_GAP_SECONDS = 5;
@@ -90,7 +92,8 @@ function buildSequentialScenarios() {
   }
   return scenarios;
 }
-const BASE_URL = APP === "wildfly" ? "http://jms-app:8080" : "http://rabbitmq-app:8020";
+const BASE_URL =
+  APP === "wildfly" ? "http://jms-app:8080" : "http://rabbitmq-app:8020";
 const POLL_INTERVAL = 5;
 const MAX_POLL_ATTEMPTS = 10;
 
@@ -98,7 +101,10 @@ export default function () {
   const iterationId = __ITER;
   const scenarioName = exec.scenario.name;
   const scenarioConfig = SCENARIO_CONFIGS[scenarioName];
-  const {selectedFiles, fileSize} = selectFiles(scenarioConfig.fileCount, iterationId);
+  const { selectedFiles, fileSize } = selectFiles(
+    scenarioConfig.fileCount,
+    iterationId
+  );
 
   const fd = new FormData();
   fd.append("email", "jpvlck@students.zcu.cz");
@@ -113,7 +119,9 @@ export default function () {
   });
 
   const startTime = new Date();
-  console.log(`Sending POST request with ${selectedFiles.length} file(s) totaling ${fileSize} bytes`);
+  console.log(
+    `Sending POST request with ${selectedFiles.length} file(s) totaling ${fileSize} bytes`
+  );
   const response = http.post(`${BASE_URL}/api/v1/submissions`, fd.body(), {
     headers: {
       "Content-Type": "multipart/form-data; boundary=" + fd.boundary,
@@ -125,7 +133,9 @@ export default function () {
       app: APP,
     },
   });
-  console.log(`Received response with status ${response.status} for submission`);
+  console.log(
+    `Received response with status ${response.status} for submission`
+  );
 
   const submissionId = extractSubmissionId(response);
 
@@ -159,13 +169,23 @@ function pollSubmission(submissionId, startTime, totalTimeTrend) {
       `${BASE_URL}/api/v1/submissions/${submissionId}`
     );
     const parseredBody = JSON.parse(pollResponse.body);
-    console.log(`Status odpovědi při dotazování na stav: ${pollResponse.status} - submissionId: ${submissionId}`);
+    console.log(
+      `Status odpovědi při dotazování na stav: ${pollResponse.status} - submissionId: ${submissionId}`
+    );
     if (pollResponse.status === 200 && parseredBody.savedAt !== null) {
-      console.log(`Successfully retrieved submission: ${submissionId} in ${attempts} attempts - ${parseredBody.savedAt} `);
-      console.log(`Start time: ${startTime} - Saved at: ${parseredBody.savedAt}`);
+      console.log(
+        `Successfully retrieved submission: ${submissionId} in ${attempts} attempts - ${parseredBody.savedAt} `
+      );
+      console.log(
+        `Start time: ${startTime} - Saved at: ${parseredBody.savedAt}`
+      );
       const savedAtDate = new Date(parseredBody.savedAt);
       totalTimeTrend.add(savedAtDate.getTime() - startTime.getTime());
-      console.log(`Total time for submission ${submissionId}: ${savedAtDate.getTime() - startTime.getTime()} ms`);
+      console.log(
+        `Total time for submission ${submissionId}: ${
+          savedAtDate.getTime() - startTime.getTime()
+        } ms`
+      );
       return { success: true, attempts };
     }
     if (attempts < MAX_POLL_ATTEMPTS) {
@@ -182,7 +202,7 @@ function selectFiles(count, iteration) {
     const index = (iteration * maxFiles + i) % fileContents.length;
     selected.push(fileContents[index]);
   }
-  const fileSize = selected.reduce((sum, f) => sum + f.content.byteLength, 0);
+  const fileSize = selected.reduce((sum, f) => sum + f.content.length, 0);
 
-  return {selectedFiles: selected, fileSize};
+  return { selectedFiles: selected, fileSize };
 }

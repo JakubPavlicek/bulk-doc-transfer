@@ -3,7 +3,7 @@ import { check, sleep } from "k6";
 import { FormData } from "https://jslib.k6.io/formdata/0.0.2/index.js";
 import { Trend } from "k6/metrics";
 import exec from "k6/execution";
-
+import { SharedArray } from "k6/data";
 const totalTimeTrend = new Trend("totalTime");
 
 const testDir = "./data";
@@ -16,11 +16,13 @@ const files = [
   "file6.xml",
 ];
 
-const fileContents = files.map((filename) => ({
-  name: filename,
-  content: open(`${testDir}/${filename}`, "b"),
-  type: getContentType(filename),
-}));
+const fileContents = new SharedArray("fileContents", function () {
+  return files.map((filename) => ({
+    name: filename,
+    content: open(`${testDir}/${filename}`),
+    type: getContentType(filename),
+  }));
+});
 
 function getContentType(filename) {
   const ext = filename.split(".").pop().toLowerCase();
@@ -35,7 +37,7 @@ function getContentType(filename) {
 }
 
 const SCENARIO_CONFIGS = {
-  /*// Nízký rate s 1 souborem
+  // Nízký rate s 1 souborem
   "low-1file": { fileCount: 1, rate: 2, timeUnit: "10s", duration: "60s" }, // 0.2 req/s
   // Střední rate s 1 souborem
   "mid-1file": { fileCount: 1, rate: 1, timeUnit: "1s", duration: "60s" }, // 1 req/s
@@ -51,8 +53,6 @@ const SCENARIO_CONFIGS = {
   "low-5files": { fileCount: 5, rate: 2, timeUnit: "10s", duration: "60s" }, // 0.2 req/s
   // Střední rate s 5 soubory
   "mid-5files": { fileCount: 5, rate: 1, timeUnit: "1s", duration: "60s" }, // 1 req/s
-  // Vyšší rate s 5 soubory*/
-  "high-5files": { fileCount: 5, rate: 3, timeUnit: "1s", duration: "60s" }, // 5 req/s
 };
 
 const SCENARIO_GAP_SECONDS = 5;
@@ -89,7 +89,7 @@ function buildSequentialScenarios() {
   return scenarios;
 }
 
-const BASE_URL = "http://synchronous-app:8010";
+const BASE_URL = "http://localhost:8010";
 const POLL_INTERVAL = 5;
 const MAX_POLL_ATTEMPTS = 10;
 
@@ -206,7 +206,7 @@ function selectFiles(count, iteration) {
     const index = (iteration * maxFiles + i) % fileContents.length;
     selected.push(fileContents[index]);
   }
-  const fileSize = selected.reduce((sum, f) => sum + f.content.byteLength, 0);
+  const fileSize = selected.reduce((sum, f) => sum + f.content.length, 0);
 
   return { selectedFiles: selected, fileSize };
 }
