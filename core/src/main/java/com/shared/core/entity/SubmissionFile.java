@@ -1,5 +1,6 @@
 package com.shared.core.entity;
 
+import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -81,6 +82,7 @@ public class SubmissionFile {
     )
     private Long size;
 
+    @Basic(fetch = FetchType.LAZY)
     @Column(name = "content")
     private byte[] content;
 

@@ -25,4 +25,8 @@ public class SubmissionStateHistoryService {
         historyRepository.save(history);
     }
 
+    public void deleteAllInBatch() {
+        historyRepository.deleteAllInBatch();
+    }
+
 }

@@ -57,4 +57,8 @@ public class SubmissionFileService {
                                        .orElseThrow(() -> new SubmissionFileNotFoundException(submission.getId(), fileId));
     }
 
+    public void deleteAllInBatch() {
+        submissionFileRepository.deleteAllInBatch();
+    }
+
 }

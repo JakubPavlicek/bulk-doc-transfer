@@ -93,8 +93,10 @@ public class DocumentSubmissionService {
 
     public void deleteSubmissions() {
         // Delete all submissions with files and submitters
-        submissionRepository.deleteAll();
-        submitterService.deleteAll();
+        submissionFileService.deleteAllInBatch();
+        stateHistoryService.deleteAllInBatch();
+        submissionRepository.deleteAllInBatch();
+        submitterService.deleteAllInBatch();
 
         // Reset sequences
         submissionRepository.resetSequences();
