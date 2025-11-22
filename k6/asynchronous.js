@@ -11,8 +11,8 @@ import {
   SCENARIO_CONFIGS,
 } from "./utils.js";
 
-const APP = "wildfly";
-// const APP = "rabbitmq"
+// const APP = "wildfly";
+const APP = "rabbitmq";
 
 const totalTimeTrend = new Trend("totalTime");
 
@@ -71,7 +71,14 @@ export default function () {
 
   sleep(3); // Short sleep before polling - electronic signature, malware scan, etc.
   const pollResult = submissionId
-    ? pollSubmission(submissionId, startTime, totalTimeTrend, BASE_URL)
+    ? pollSubmission(
+        submissionId,
+        startTime,
+        totalTimeTrend,
+        BASE_URL,
+        scenarioConfig.pollInterval,
+        scenarioConfig.maxPollAttempts
+      )
     : { success: false, attempts: 0 };
 
   check(response, {

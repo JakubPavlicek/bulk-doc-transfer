@@ -4,27 +4,118 @@ import { sleep } from "k6";
 
 /** Scenario configurations */
 export const SCENARIO_CONFIGS = {
-  // Nízký rate s 1 souborem
-  "low-1file": { fileCount: 1, rate: 2, timeUnit: "10s", duration: "60s" }, // 0.2 req/s
-  // Střední rate s 1 souborem
-  "mid-1file": { fileCount: 1, rate: 1, timeUnit: "1s", duration: "60s" }, // 1 req/s
-  // Vyšší rate s 1 souborem
-  "high-1file": { fileCount: 1, rate: 5, timeUnit: "1s", duration: "60s" }, // 5 req/s
+  // Low stress - 1 file
+  // 20 req/s * 120s = 2,400 submissions. Max runtime: ~20 minutes
+  "low-1file": {
+    fileCount: 1,
+    rate: 20,
+    timeUnit: "1s",
+    duration: "120s",
+    allowedTimeInSeconds: 1200, // 120s duration + 1080s (18 min) buffer - total ~20 min
+    pollInterval: 3, // Fast polling for low stress
+    maxPollAttempts: 360, // Covers 1080s processing buffer (360 * 3s = 1080s)
+  }, // 20 req/s
 
-  // Nízký rate s 3 soubory
-  "low-3files": { fileCount: 3, rate: 2, timeUnit: "10s", duration: "60s" }, // 0.2 req/s
-  // Střední rate s 3 soubory
-  "mid-3files": { fileCount: 3, rate: 1, timeUnit: "1s", duration: "60s" }, // 1 req/s
+  // Medium stress - 1 file
+  // 50 req/s * 120s = 6,000 submissions. Max runtime: ~22 minutes
+  //   "mid-1file": {
+  //     fileCount: 1,
+  //     rate: 50,
+  //     timeUnit: "1s",
+  //     duration: "120s",
+  //     allowedTimeInSeconds: 1320, // 120s duration + 1200s (20 min) buffer - total ~22 min
+  //     pollInterval: 5, // Moderate polling
+  //     maxPollAttempts: 240, // Covers 1200s processing buffer (240 * 5s = 1200s)
+  //   }, // 50 req/s
 
-  // Nízký rate s 5 soubory
-  "low-5files": { fileCount: 5, rate: 2, timeUnit: "10s", duration: "60s" }, // 0.2 req/s
-  // Střední rate s 5 soubory
-  "mid-5files": { fileCount: 5, rate: 1, timeUnit: "1s", duration: "60s" }, // 1 req/s
+  //   // High stress - 1 file
+  //   // 100 req/s * 120s = 12,000 submissions. Max runtime: ~25 minutes
+  //   "high-1file": {
+  //     fileCount: 1,
+  //     rate: 100,
+  //     timeUnit: "1s",
+  //     duration: "120s",
+  //     allowedTimeInSeconds: 1500, // 120s duration + 1380s (23 min) buffer - total ~25 min
+  //     pollInterval: 8, // Slower polling for high stress
+  //     maxPollAttempts: 172, // Covers 1380s processing buffer (172 * 8s = 1376s ≈ 1380s)
+  //   }, // 100 req/s
+
+  //   // Low stress - 3 files
+  //   // 15 req/s * 120s = 1,800 submissions. Max runtime: ~20 minutes
+  //   "low-3files": {
+  //     fileCount: 3,
+  //     rate: 15,
+  //     timeUnit: "1s",
+  //     duration: "120s",
+  //     allowedTimeInSeconds: 1200, // 120s duration + 1080s (18 min) buffer - total ~20 min
+  //     pollInterval: 3, // Slightly slower due to more files
+  //     maxPollAttempts: 360, // Covers 1080s processing buffer (360 * 3s = 1080s)
+  //   }, // 15 req/s
+
+  //   // Medium stress - 3 files
+  //   // 40 req/s * 120s = 4,800 submissions. Max runtime: ~22 minutes
+  //   "mid-3files": {
+  //     fileCount: 3,
+  //     rate: 40,
+  //     timeUnit: "1s",
+  //     duration: "120s",
+  //     allowedTimeInSeconds: 1320, // 120s duration + 1200s (20 min) buffer - total ~22 min
+  //     pollInterval: 6, // Moderate polling with multiple files
+  //     maxPollAttempts: 200, // Covers 1200s processing buffer (200 * 6s = 1200s)
+  //   }, // 40 req/s
+
+  //   // High stress - 3 files
+  //   // 80 req/s * 120s = 9,600 submissions. Max runtime: ~25 minutes
+  //   "high-3files": {
+  //     fileCount: 3,
+  //     rate: 80,
+  //     timeUnit: "1s",
+  //     duration: "120s",
+  //     allowedTimeInSeconds: 1500, // 120s duration + 1380s (23 min) buffer - total ~25 min
+  //     pollInterval: 10, // Slower polling for high stress + multiple files
+  //     maxPollAttempts: 138, // Covers 1380s processing buffer (138 * 10s = 1380s)
+  //   }, // 80 req/s
+
+  //   // Low stress - 5 files
+  //   // 10 req/s * 120s = 1,200 submissions. Max runtime: ~20 minutes
+  //   "low-5files": {
+  //     fileCount: 5,
+  //     rate: 10,
+  //     timeUnit: "1s",
+  //     duration: "120s",
+  //     allowedTimeInSeconds: 1200, // 120s duration + 1080s (18 min) buffer - total ~20 min
+  //     pollInterval: 4, // Slower due to many files
+  //     maxPollAttempts: 270, // Covers 1080s processing buffer (270 * 4s = 1080s)
+  //   }, // 10 req/s
+
+  //   // Medium stress - 5 files
+  //   // 30 req/s * 120s = 3,600 submissions. Max runtime: ~22 minutes
+  //   "mid-5files": {
+  //     fileCount: 5,
+  //     rate: 30,
+  //     timeUnit: "1s",
+  //     duration: "120s",
+  //     allowedTimeInSeconds: 1320, // 120s duration + 1200s (20 min) buffer - total ~22 min
+  //     pollInterval: 7, // Moderate polling with many files
+  //     maxPollAttempts: 171, // Covers 1200s processing buffer (171 * 7s = 1197s ≈ 1200s)
+  //   }, // 30 req/s
+
+  //   // High stress - 5 files
+  //   // 60 req/s * 120s = 7,200 submissions. Max runtime: ~25 minutes
+  //   "high-5files": {
+  //     fileCount: 5,
+  //     rate: 60,
+  //     timeUnit: "1s",
+  //     duration: "120s",
+  //     allowedTimeInSeconds: 1500, // 120s duration + 1380s (23 min) buffer - total ~25 min
+  //     pollInterval: 12, // Slowest polling for highest stress + many files
+  //     maxPollAttempts: 115, // Covers 1380s processing buffer (115 * 12s = 1380s)
+  //   }, // 60 req/s
 };
 
-const SCENARIO_GAP_SECONDS = 5;
-const POLL_INTERVAL = 5;
-const MAX_POLL_ATTEMPTS = 10;
+// Default poll configuration (fallback if not specified in scenario)
+const DEFAULT_POLL_INTERVAL = 5;
+const DEFAULT_MAX_POLL_ATTEMPTS = 10;
 
 /** File contents */
 
@@ -86,21 +177,20 @@ export function buildSequentialScenarios() {
   let offsetSeconds = 0;
   for (const name of Object.keys(SCENARIO_CONFIGS)) {
     const scenario = SCENARIO_CONFIGS[name];
-    const durationSeconds = parseInt(scenario.duration);
     scenarios[name] = {
       executor: "constant-arrival-rate",
       rate: scenario.rate,
       timeUnit: scenario.timeUnit || "1s",
       duration: scenario.duration,
       preAllocatedVUs: 10,
-      maxVUs: 50,
+      maxVUs: 100000,
       startTime: `${offsetSeconds}s`,
       tags: {
         scenarioType: name,
       },
-      gracefulStop: "100s",
+      gracefulStop: `${scenario.allowedTimeInSeconds}s`,
     };
-    offsetSeconds += durationSeconds + SCENARIO_GAP_SECONDS;
+    offsetSeconds += scenario.allowedTimeInSeconds;
   }
   return scenarios;
 }
@@ -109,9 +199,11 @@ export function pollSubmission(
   submissionId,
   startTime,
   totalTimeTrend,
-  BASE_URL
+  BASE_URL,
+  pollInterval = DEFAULT_POLL_INTERVAL,
+  maxPollAttempts = DEFAULT_MAX_POLL_ATTEMPTS
 ) {
-  for (let attempts = 1; attempts <= MAX_POLL_ATTEMPTS; attempts++) {
+  for (let attempts = 1; attempts <= maxPollAttempts; attempts++) {
     const pollResponse = http.get(
       `${BASE_URL}/api/v1/submissions/${submissionId}`
     );
@@ -135,9 +227,9 @@ export function pollSubmission(
       );
       return { success: true, attempts };
     }
-    if (attempts < MAX_POLL_ATTEMPTS) {
-      sleep(POLL_INTERVAL);
+    if (attempts < maxPollAttempts) {
+      sleep(pollInterval);
     }
   }
-  return { success: false, attempts: MAX_POLL_ATTEMPTS };
+  return { success: false, attempts: maxPollAttempts };
 }

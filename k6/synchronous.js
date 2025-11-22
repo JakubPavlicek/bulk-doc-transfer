@@ -68,7 +68,14 @@ export default function () {
 
   const submissionId = extractSubmissionId(response);
   const pollResult = submissionId
-    ? pollSubmission(submissionId, startTime, totalTimeTrend, BASE_URL)
+    ? pollSubmission(
+        submissionId,
+        startTime,
+        totalTimeTrend,
+        BASE_URL,
+        scenarioConfig.pollInterval,
+        scenarioConfig.maxPollAttempts
+      )
     : { success: false, attempts: 0 };
 
   check(response, {
