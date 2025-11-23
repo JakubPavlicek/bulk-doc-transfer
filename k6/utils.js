@@ -166,6 +166,10 @@ export function pollSubmission(
       {
         tags: {
           app: app,
+          scenario: scenarioName,
+          rate: rate,
+          fileCount: fileCount,
+          fileSize: fileSize,
         },
       }
     );
