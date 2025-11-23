@@ -57,9 +57,10 @@ export default function () {
     },
     tags: {
       scenario: scenarioName,
-      fileCount: selectedFiles.length.toString(),
+      fileCount: scenarioConfig.fileCount,
       fileSize: fileSize,
       app: "synchronous",
+      rate: scenarioConfig.rate,
     },
   });
   console.log(
@@ -74,23 +75,48 @@ export default function () {
         totalTimeTrend,
         BASE_URL,
         scenarioConfig.pollInterval,
-        scenarioConfig.maxPollAttempts
+        scenarioConfig.maxPollAttempts,
+        "synchronous",
+        scenarioName,
+        scenarioConfig.rate,
+        scenarioConfig.fileCount,
+        fileSize
       )
     : { success: false, attempts: 0 };
 
-  check(response, {
-    "status is 202": (r) => r.status === 202,
-    "has submissionId": (r) => {
-      try {
-        const body = JSON.parse(r.body);
-        return body.submissionId !== undefined;
-      } catch {
-        return false;
-      }
+  check(
+    response,
+    {
+      "status is 202": (r) => r.status === 202,
+      "has submissionId": (r) => {
+        try {
+          const body = JSON.parse(r.body);
+          return body.submissionId !== undefined;
+        } catch {
+          return false;
+        }
+      },
     },
-  });
+    {
+      app: "synchronous",
+      scenario: scenarioName,
+      rate: scenarioConfig.rate,
+      fileCount: scenarioConfig.fileCount,
+      fileSize: fileSize,
+    }
+  );
 
-  check(pollResult, {
-    "submission saved within timeout": (res) => res.success,
-  });
+  check(
+    pollResult,
+    {
+      "submission saved within timeout": (res) => res.success,
+    },
+    {
+      app: "synchronous",
+      scenario: scenarioName,
+      rate: scenarioConfig.rate,
+      fileCount: scenarioConfig.fileCount,
+      fileSize: fileSize,
+    }
+  );
 }

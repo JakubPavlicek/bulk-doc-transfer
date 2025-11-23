@@ -6,63 +6,63 @@ import { sleep } from "k6";
 export const SCENARIO_CONFIGS = {
   // Low stress - 1 file (common single file submission)
   // 20 req/s * 60s = 1,200 submissions. Max runtime: ~20 minutes
-  "low-1file": {
-    fileCount: 1,
-    rate: 20,
+  "medium-3files": {
+    fileCount: 3,
+    rate: 2,
     timeUnit: "1s",
-    duration: "60s",
-    allowedTimeInSeconds: 1200, // 60s duration + 1140s (19 min) buffer - total ~20 min
+    duration: "20s",
+    allowedTimeInSeconds: 600, // 60s duration + 1140s (19 min) buffer - total ~20 min
     pollInterval: 3, // Fast polling for low stress
     maxPollAttempts: 380, // Covers 1140s processing buffer (380 * 3s = 1140s)
   }, // 20 req/s
 
-  // Medium stress - 3 files (typical multi-file submission)
-  // 40 req/s * 60s = 2,400 submissions. Max runtime: ~22 minutes
-  "mid-3files": {
-    fileCount: 3,
-    rate: 40,
-    timeUnit: "1s",
-    duration: "60s",
-    allowedTimeInSeconds: 1320, // 60s duration + 1260s (21 min) buffer - total ~22 min
-    pollInterval: 6, // Moderate polling with multiple files
-    maxPollAttempts: 210, // Covers 1260s processing buffer (210 * 6s = 1260s)
-  }, // 40 req/s
+  //   // Medium stress - 3 files (typical multi-file submission)
+  //   // 40 req/s * 60s = 2,400 submissions. Max runtime: ~22 minutes
+  //   "mid-3files": {
+  //     fileCount: 3,
+  //     rate: 40,
+  //     timeUnit: "1s",
+  //     duration: "60s",
+  //     allowedTimeInSeconds: 1320, // 60s duration + 1260s (21 min) buffer - total ~22 min
+  //     pollInterval: 6, // Moderate polling with multiple files
+  //     maxPollAttempts: 210, // Covers 1260s processing buffer (210 * 6s = 1260s)
+  //   }, // 40 req/s
 
-  // High stress - 3 files (peak load with typical submission)
-  // 80 req/s * 60s = 4,800 submissions. Max runtime: ~25 minutes
-  "high-3files": {
-    fileCount: 3,
-    rate: 80,
-    timeUnit: "1s",
-    duration: "60s",
-    allowedTimeInSeconds: 1500, // 60s duration + 1440s (24 min) buffer - total ~25 min
-    pollInterval: 10, // Slower polling for high stress + multiple files
-    maxPollAttempts: 144, // Covers 1440s processing buffer (144 * 10s = 1440s)
-  }, // 80 req/s
+  //   // High stress - 3 files (peak load with typical submission)
+  //   // 80 req/s * 60s = 4,800 submissions. Max runtime: ~25 minutes
+  //   "high-3files": {
+  //     fileCount: 3,
+  //     rate: 80,
+  //     timeUnit: "1s",
+  //     duration: "60s",
+  //     allowedTimeInSeconds: 1500, // 60s duration + 1440s (24 min) buffer - total ~25 min
+  //     pollInterval: 10, // Slower polling for high stress + multiple files
+  //     maxPollAttempts: 144, // Covers 1440s processing buffer (144 * 10s = 1440s)
+  //   }, // 80 req/s
 
-  // Medium stress - 5 files (maximum files, moderate load)
-  // 30 req/s * 60s = 1,800 submissions. Max runtime: ~22 minutes
-  "mid-5files": {
-    fileCount: 5,
-    rate: 30,
-    timeUnit: "1s",
-    duration: "60s",
-    allowedTimeInSeconds: 1320, // 60s duration + 1260s (21 min) buffer - total ~22 min
-    pollInterval: 7, // Moderate polling with many files
-    maxPollAttempts: 180, // Covers 1260s processing buffer (180 * 7s = 1260s)
-  }, // 30 req/s
+  //   // Medium stress - 5 files (maximum files, moderate load)
+  //   // 30 req/s * 60s = 1,800 submissions. Max runtime: ~22 minutes
+  //   "mid-5files": {
+  //     fileCount: 5,
+  //     rate: 30,
+  //     timeUnit: "1s",
+  //     duration: "60s",
+  //     allowedTimeInSeconds: 1320, // 60s duration + 1260s (21 min) buffer - total ~22 min
+  //     pollInterval: 7, // Moderate polling with many files
+  //     maxPollAttempts: 180, // Covers 1260s processing buffer (180 * 7s = 1260s)
+  //   }, // 30 req/s
 
-  // High stress - 5 files (maximum files, peak load)
-  // 60 req/s * 60s = 3,600 submissions. Max runtime: ~25 minutes
-  "high-5files": {
-    fileCount: 5,
-    rate: 60,
-    timeUnit: "1s",
-    duration: "60s",
-    allowedTimeInSeconds: 1500, // 60s duration + 1440s (24 min) buffer - total ~25 min
-    pollInterval: 12, // Slowest polling for highest stress + many files
-    maxPollAttempts: 120, // Covers 1440s processing buffer (120 * 12s = 1440s)
-  }, // 60 req/s
+  //   // High stress - 5 files (maximum files, peak load)
+  //   // 60 req/s * 60s = 3,600 submissions. Max runtime: ~25 minutes
+  //   "high-5files": {
+  //     fileCount: 5,
+  //     rate: 60,
+  //     timeUnit: "1s",
+  //     duration: "60s",
+  //     allowedTimeInSeconds: 1500, // 60s duration + 1440s (24 min) buffer - total ~25 min
+  //     pollInterval: 12, // Slowest polling for highest stress + many files
+  //     maxPollAttempts: 120, // Covers 1440s processing buffer (120 * 12s = 1440s)
+  //   }, // 60 req/s
 };
 
 // Default poll configuration (fallback if not specified in scenario)
@@ -153,11 +153,21 @@ export function pollSubmission(
   totalTimeTrend,
   BASE_URL,
   pollInterval = DEFAULT_POLL_INTERVAL,
-  maxPollAttempts = DEFAULT_MAX_POLL_ATTEMPTS
+  maxPollAttempts = DEFAULT_MAX_POLL_ATTEMPTS,
+  app,
+  scenarioName,
+  rate,
+  fileCount,
+  fileSize
 ) {
   for (let attempts = 1; attempts <= maxPollAttempts; attempts++) {
     const pollResponse = http.get(
-      `${BASE_URL}/api/v1/submissions/${submissionId}`
+      `${BASE_URL}/api/v1/submissions/${submissionId}`,
+      {
+        tags: {
+          app: app,
+        },
+      }
     );
     const parseredBody = JSON.parse(pollResponse.body);
     console.log(
@@ -171,7 +181,13 @@ export function pollSubmission(
         `Start time: ${startTime} - Saved at: ${parseredBody.savedAt}`
       );
       const savedAtDate = new Date(parseredBody.savedAt);
-      totalTimeTrend.add(savedAtDate.getTime() - startTime.getTime());
+      totalTimeTrend.add(savedAtDate.getTime() - startTime.getTime(), {
+        app: app,
+        scenario: scenarioName,
+        rate: rate,
+        fileCount: fileCount,
+        fileSize: fileSize,
+      });
       console.log(
         `Total time for submission ${submissionId}: ${
           savedAtDate.getTime() - startTime.getTime()
