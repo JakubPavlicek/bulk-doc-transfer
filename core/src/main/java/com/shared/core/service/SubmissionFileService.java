@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -27,29 +28,21 @@ public class SubmissionFileService {
     public <T> void saveFiles(List<T> files, DocumentSubmission submission) {
         log.info("Saving {} files for submission ID: {}", files.size(), submission.getId());
 
-        // Save the files
+        List<SubmissionFile> toSave = new ArrayList<>(files.size());
+
         files.forEach(file -> {
             switch (file) {
-                case MultipartFile mf -> saveFile(mf, submission);
-                case SubmissionFile sf -> saveFile(sf, submission);
+                case MultipartFile mf -> toSave.add(submissionFileMapper.toSubmissionFile(mf, submission));
+                case SubmissionFile sf -> toSave.add(sf);
                 default -> throw new IllegalStateException("Unexpected value: " + file);
             }
         });
 
+        submissionFileRepository.saveAll(toSave);
+
         submission.setTotalFiles(files.size());
         submission.setState(SubmissionState.SAVED);
         stateHistoryService.saveStateForSubmission(SubmissionState.SAVED, submission);
-    }
-
-    private void saveFile(MultipartFile file, DocumentSubmission submission) {
-        log.info("Saving MultipartFile: {} for submission ID: {}", file.getOriginalFilename(), submission.getId());
-        SubmissionFile submissionFile = submissionFileMapper.toSubmissionFile(file, submission);
-        submissionFileRepository.save(submissionFile);
-    }
-
-    private void saveFile(SubmissionFile submissionFile, DocumentSubmission submission) {
-        log.info("Saving SubmissionFile: {} for submission ID: {}", submissionFile.getName(), submission.getId());
-        submissionFileRepository.save(submissionFile);
     }
 
     protected SubmissionFile getSubmissionFile(DocumentSubmission submission, Long fileId) {

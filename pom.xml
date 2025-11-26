@@ -45,8 +45,8 @@
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 
         <!-- Cloud Native Buildpacks -->
-        <image.builder.version>0.0.82</image.builder.version>
-        <buildpack-java.version>20.2.1</buildpack-java.version>
+        <image.builder.version>0.0.85</image.builder.version>
+        <buildpack-java.version>20.3.0</buildpack-java.version>
         <buildpack-health-checker.version>2.11.1</buildpack-health-checker.version>
     </properties>
 

@@ -20,10 +20,11 @@ services:
 
   rabbitmq:
     container_name: rabbitmq
-    image: rabbitmq:4.1.4-management-alpine
+    image: rabbitmq:4.2.1-management-alpine
     environment:
       RABBITMQ_DEFAULT_USER: rabbit
       RABBITMQ_DEFAULT_PASS: rabbit
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "+A 128"
     healthcheck:
       # https://www.rabbitmq.com/docs/monitoring#stage-3
       test: rabbitmq-diagnostics --quiet check_running && rabbitmq-diagnostics --quiet check_local_alarms
@@ -33,6 +34,9 @@ services:
     ports:
       - '5672:5672'
       - '15672:15672'
+    volumes:
+      - rabbitmq_data-sare:/var/lib/rabbitmq
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
     networks:
       - backend
 
@@ -144,3 +148,4 @@ networks:
 volumes:
   postgres_data-sare:
   es_data-sare:
+  rabbitmq_data-sare:

@@ -25,7 +25,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 @Slf4j
 @RequiredArgsConstructor
-@Transactional
 @Service
 public class DocumentSubmissionService {
 
@@ -35,11 +34,13 @@ public class DocumentSubmissionService {
     private final SubmitterService submitterService;
     private final DocumentSubmissionMapper submissionMapper;
 
+    @Transactional(readOnly = true)
     public SubmissionView getSubmission(Long submissionId) {
         return submissionRepository.findDocumentSubmissionById(submissionId)
                                    .orElseThrow(() -> new SubmissionNotFoundException(submissionId));
     }
 
+    @Transactional(readOnly = true)
     public Page<@NonNull SubmissionDetailView> listSubmissions(String submitterEmail, SubmissionState state, Pageable pageable) {
         Specification<@NonNull DocumentSubmission> spec = Specification.where(SubmissionSpecification.fetchSubmitter());
 
@@ -54,6 +55,7 @@ public class DocumentSubmissionService {
         return submissionMapper.mapToSubmissionDetailPage(documentSubmissions);
     }
 
+    @Transactional
     public DocumentSubmission saveSubmission(String subject, String description, Submitter submitter) {
         DocumentSubmission submission = submissionMapper.toDocumentSubmission(subject, description, submitter);
         updateSubmissionState(submission, SubmissionState.ACCEPTED);
@@ -74,23 +76,27 @@ public class DocumentSubmissionService {
         updateSubmissionState(submission, SubmissionState.PROCESSED);
     }
 
+    @Transactional
     public void updateSubmissionState(DocumentSubmission submission, SubmissionState newState) {
         submission.setState(newState);
         submissionRepository.save(submission);
         stateHistoryService.saveStateForSubmission(newState, submission);
     }
 
+    @Transactional(readOnly = true)
     public SubmissionFile getSubmissionFile(Long submissionId, Long fileId) {
         DocumentSubmission submission = findSubmissionById(submissionId);
 
         return submissionFileService.getSubmissionFile(submission, fileId);
     }
 
+    @Transactional(readOnly = true)
     public DocumentSubmission findSubmissionById(Long submissionId) {
         return submissionRepository.findById(submissionId)
                                    .orElseThrow(() -> new SubmissionNotFoundException(submissionId));
     }
 
+    @Transactional
     public void deleteSubmissions() {
         // Delete all submissions with files and submitters
         submissionFileService.deleteAllInBatch();
@@ -100,6 +106,10 @@ public class DocumentSubmissionService {
 
         // Reset sequences
         submissionRepository.resetSequences();
+    }
+
+    public void saveSubmission(DocumentSubmission submission) {
+        submissionRepository.save(submission);
     }
 
 }

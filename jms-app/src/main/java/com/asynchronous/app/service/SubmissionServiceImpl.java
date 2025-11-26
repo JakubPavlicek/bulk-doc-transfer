@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -36,7 +38,13 @@ public class SubmissionServiceImpl implements SubmissionService {
 
         // Send the submission with files to the queue
         List<FileMessage> fileMessages = submissionFileMapper.toFileMessages(files);
-        jmsProducer.sendSubmissionMessage(submission, fileMessages);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                jmsProducer.sendSubmissionMessage(submission, fileMessages);
+            }
+        });
 
         return submission.getId();
     }

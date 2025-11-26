@@ -6,17 +6,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.support.converter.JacksonJsonMessageConverter;
 import org.springframework.jms.support.converter.MessageConverter;
-import org.springframework.jms.support.converter.MessageType;
+import org.springframework.jms.support.converter.SimpleMessageConverter;
 import org.springframework.jndi.JndiObjectFactoryBean;
+
+import javax.naming.NamingException;
 
 @RequiredArgsConstructor
 @Configuration
 public class JmsConfig {
 
     @Bean
-    public ConnectionFactory jmsConnectionFactory() throws Exception {
+    public ConnectionFactory jmsConnectionFactory() throws NamingException {
         JndiObjectFactoryBean factoryBean = new JndiObjectFactoryBean();
         factoryBean.setJndiName("java:/ConnectionFactory");
         factoryBean.setLookupOnStartup(true);
@@ -25,7 +26,7 @@ public class JmsConfig {
     }
 
     @Bean
-    public Queue incomingDocumentsQueue() throws Exception {
+    public Queue incomingDocumentsQueue() throws NamingException {
         JndiObjectFactoryBean factoryBean = new JndiObjectFactoryBean();
         factoryBean.setJndiName("java:/jms/queue/submissionQueue");
         factoryBean.setLookupOnStartup(true);
@@ -34,20 +35,17 @@ public class JmsConfig {
     }
 
     @Bean
-    public JmsTemplate jmsTemplate() throws Exception {
+    public JmsTemplate jmsTemplate() throws NamingException {
         JmsTemplate template = new JmsTemplate();
         template.setDefaultDestination(incomingDocumentsQueue());
         template.setConnectionFactory(jmsConnectionFactory());
-        template.setMessageConverter(jacksonJmsMessageConverter());
+        template.setMessageConverter(messageConverter());
         return template;
     }
 
     @Bean
-    public MessageConverter jacksonJmsMessageConverter() {
-        JacksonJsonMessageConverter converter = new JacksonJsonMessageConverter();
-        converter.setTargetType(MessageType.TEXT);
-        converter.setTypeIdPropertyName("_type");
-        return converter;
+    public MessageConverter messageConverter() {
+        return new SimpleMessageConverter();
     }
 
 }

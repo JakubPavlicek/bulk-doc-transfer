@@ -19,7 +19,6 @@ import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
-@Transactional
 @Service
 public class JmsConsumer {
 
@@ -46,6 +45,7 @@ public class JmsConsumer {
         // Finally, update the submission state
         documentSubmissionService.updateSubmissionState(submission, SubmissionState.RESPONSE_SENT);
         submission.setSavedAt(Instant.now());
+        documentSubmissionService.saveSubmission(submission);
 
         log.info("Submission with ID: {} processed successfully", submissionId);
     }
