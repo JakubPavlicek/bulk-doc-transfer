@@ -6,9 +6,9 @@ import { sleep } from "k6";
 export const SCENARIO_CONFIGS = {
   // Low stress - 1 file (common single file submission)
   // 20 req/s * 60s = 1,200 submissions. Max runtime: ~20 minutes
-  "medium-3files": {
-    fileCount: 3,
-    rate: 2,
+  custom: {
+    fileCount: 1,
+    rate: 1,
     timeUnit: "1s",
     duration: "20s",
     allowedTimeInSeconds: 600, // 60s duration + 1140s (19 min) buffer - total ~20 min
@@ -124,7 +124,7 @@ export function selectFiles(count, iteration) {
   return { selectedFiles: selected, fileSize };
 }
 
-export function buildSequentialScenarios() {
+export function buildSequentialScenarios(app = "default") {
   const scenarios = {};
   let offsetSeconds = 0;
   for (const name of Object.keys(SCENARIO_CONFIGS)) {
@@ -138,7 +138,11 @@ export function buildSequentialScenarios() {
       maxVUs: 100000,
       startTime: `${offsetSeconds}s`,
       tags: {
+        scenario: name,
         scenarioType: name,
+        app: app,
+        fileCount: scenario.fileCount.toString(),
+        rate: scenario.rate.toString(),
       },
       gracefulStop: `${scenario.allowedTimeInSeconds}s`,
     };

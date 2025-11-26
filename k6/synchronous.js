@@ -14,7 +14,7 @@ import {
 const totalTimeTrend = new Trend("totalTime");
 
 export const options = {
-  scenarios: buildSequentialScenarios(),
+  scenarios: buildSequentialScenarios("synchronous"),
   thresholds: {
     http_req_duration: ["p(95)<5000"],
     http_req_failed: ["rate<0.1"],
