@@ -76,11 +76,11 @@ The backend applications are implemented with the following technologies:
 
 ### Architecture
 
-<img src="architecture.png" alt="Architecture Diagram" width="2000">
+<img src="images/architecture.png" alt="Architecture Diagram" width="2000">
 
 ### Database
 
-<img src="database.png" alt="Database Schema" width="2000">
+<img src="images/database.png" alt="Database Schema" width="2000">
 
 ### Docker
 
@@ -116,3 +116,61 @@ docker compose up -d synchronous-app postgres
 Every REST API endpoint is prefixed with /api/v1. Example: `http://localhost:8080/api/v1/submissions`
 
 See the provided [Postman Collection](BulkDocTransfer.postman_collection.json) for more details.
+
+## Výsledky testování
+
+- testováno na zařízeních:
+  - MacBook Pro M1 (8-core CPU), 16 GB RAM
+  - Mac Studio M1 Max (10-core CPU), 32 GB RAM
+- nastavení:
+  - pokaždé byl zapnut jen Docker a lokální terminál, kde běžela k6
+  - čekání na zpracování Malware / kontrola elektronického podpisu = 1 sekunda
+  - do front se posílají bloby souborů
+  - Producent i Consumer jsou v jedné aplikaci
+  - soubor posílá k6 na REST API endpoint POST /submissions
+    - zpracování probíhá uvnitř aplikace (tj. Spring Boot), která je posílá do fronty
+
+### Mac Studio výsledky
+
+- synchronní aplikace:
+  - 40 requestů/s
+  - 3 soubory v každém requestu
+  - ![synchronous_32.png](images/synchronous_32.png)
+
+- rabbitMQ aplikace:
+  - 40 requestů/s
+  - 3 soubory v každém requestu
+  - ![rabbit_32.png](images/rabbit_32.png)
+
+- WildFly (JMS) aplikace:
+  - 40 requestů/s
+  - 3 soubory v každém requestu
+  - ![jms_32.png](images/jms_32.png)
+
+### MacBook Pro výsledky
+
+- synchronní aplikace:
+  - 15 requestů/s
+  - 1 soubory v každém requestu
+  - ![synchronous_16.png](images/synchronous_16.png)
+
+- rabbitMQ aplikace:
+  - 15 requestů/s
+  - 1 soubory v každém requestu
+  - ![rabbit_16.png](images/rabbit_16.png)
+
+- WildFly (JMS) aplikace:
+  - 15 requestů/s
+  - 1 soubory v každém requestu
+  - ![jms_16.png](images/jms_16.png)
+
+## Poznatky
+
+- čím více virtuálních uživatelů v k6 použijeme, tím výrazně více se zatěžuje RAM (i kvůli souborům v paměti)
+- testování na MacBooku Pro (8-core CPU a 16 GB RAM) bylo výrazně pomalejší než na Mac Studiu (10-core CPU a 32 GB RAM)
+  - v podstatě MacBook Pro nezvládl 40 req/s se 3 soubory v každém requestu (proto jsme to snížili na 15 req/s a 1 soubor v každém requestu)
+- zkoušeli jsme i různě konfigurovat RabbitMQ / WildFly fronty, ale nijak zvlášť to nepomohlo -> problém nedostatku RAM pořád přetrvával
+- RabbitMQ je nejvíce spolehlivý, ale zpracování souborů může trvat i velmi dlouhou dobu
+  - to může být způsobeno i tém, že do fronty posíláme samotný obsah souborů (tj. blob)
+- WildFly aplikace občas vyhodí warningy "broken pipe" a zpracování taky může trvat velmi dlouhou dobu
+- Synchronní aplikace se chová překvapivě dobře
