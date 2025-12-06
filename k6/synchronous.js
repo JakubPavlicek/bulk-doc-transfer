@@ -8,6 +8,8 @@ import {
   selectFiles,
   extractSubmissionId,
   pollSubmission,
+  APP,
+  BASE_URL,
   SCENARIO_CONFIGS,
 } from "./utils.js";
 
@@ -20,8 +22,6 @@ export const options = {
     http_req_failed: ["rate<0.1"],
   },
 };
-
-const BASE_URL = "http://localhost:8010";
 
 export default function () {
   const iterationId = __ITER;

@@ -1,4 +1,6 @@
-### Devcontainer Setup
+### Non-Elasticsearch Metrics Setup
+
+#### Devcontainer Setup
 
 ⚠️ **Only for k6 tests**
 
@@ -9,14 +11,39 @@
 - Press `F1` and select `Dev Containers: Reopen in Container`.
 - Now you can run k6 tests from VSCode:
     ```shell
-    K6_ELASTICSEARCH_URL=http://elasticsearch-sare:9200 \
-    ./k6 run simple-test.js -o output-elasticsearch
+    # Synchronous test
+    ./k6 run -e APP=synchronous synchronous.js
+    # or RabbitMQ test
+    ./k6 run -e APP=rabbitmq asynchronous.js
+    # or WildFly test
+    ./k6 run -e APP=wildfly asynchronous.js
     ```
 - To exit the Dev Container, press `F1` and select `Dev Containers: Reopen Folder Locally`.
 
-### Local Setup
+#### Local Setup
 
 1. Install [k6](https://grafana.com/docs/k6/latest/set-up/install-k6/)
+2. Run tests:
+    ```shell
+    # Synchronous test
+    k6 run -e APP=synchronous synchronous.js
+    # or RabbitMQ test
+    k6 run -e APP=rabbitmq asynchronous.js
+    # or WildFly test
+    k6 run -e APP=wildfly asynchronous.js
+    ```
+
+### Elasticsearch Metrics Setup
+
+#### Devcontainer Setup
+
+- Run test with metrics exporting to Elasticsearch:
+```shell
+K6_ELASTICSEARCH_URL=http://elasticsearch-sare:9200 \
+./k6 run -e APP=synchronous synchronous.js -o output-elasticsearch
+```
+
+#### Local Setup
 
 1. Build the k6 version with Elasticsearch support:
 - This will create a `k6` binary in the current directory.
@@ -36,7 +63,7 @@
 2. Run tests and export metrics to Elasticsearch:
     ```shell
     K6_ELASTICSEARCH_URL=http://elasticsearch-sare:9200 \
-    ./k6 run simple-test.js -o output-elasticsearch
+    ./k6 run -e APP=synchronous synchronous.js -o output-elasticsearch
     ```
 
 Access Kibana or Elasticsearch at the following URLs:

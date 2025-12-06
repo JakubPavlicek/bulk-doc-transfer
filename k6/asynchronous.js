@@ -8,11 +8,10 @@ import {
   selectFiles,
   extractSubmissionId,
   pollSubmission,
+  APP,
+  BASE_URL,
   SCENARIO_CONFIGS,
 } from "./utils.js";
-
-// const APP = "wildfly";
-const APP = "rabbitmq";
 
 const totalTimeTrend = new Trend("totalTime");
 
@@ -23,9 +22,6 @@ export const options = {
     http_req_failed: ["rate<0.1"],
   },
 };
-
-const BASE_URL =
-  APP === "wildfly" ? "http://localhost:8080" : "http://localhost:8020";
 
 export default function () {
   const iterationId = __ITER;

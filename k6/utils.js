@@ -2,6 +2,19 @@ import { SharedArray } from "k6/data";
 import http from "k6/http";
 import { sleep } from "k6";
 
+// The App to be tested. One of: synchronous, rabbitmq, wildfly
+export const APP = __ENV.APP || 'synchronous';
+
+export const BASE_URL = getBaseUrl(APP);
+
+function getBaseUrl(app) {
+  switch (app) {
+    case "synchronous": return "http://localhost:8010";
+    case "rabbitmq": return "http://localhost:8020";
+    case "wildfly": return "http://localhost:8080";
+  }
+}
+
 /** Scenario configurations */
 export const SCENARIO_CONFIGS = {
   // Low stress - 1 file (common single file submission)

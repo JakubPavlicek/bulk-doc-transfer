@@ -117,6 +117,10 @@ Every REST API endpoint is prefixed with /api/v1. Example: `http://localhost:808
 
 See the provided [Postman Collection](BulkDocTransfer.postman_collection.json) for more details.
 
+### Testing
+
+See the [k6/README.md](k6/README.md) for details.
+
 ## Výsledky testování
 
 - testováno na zařízeních:
